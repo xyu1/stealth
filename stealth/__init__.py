@@ -1,12 +1,12 @@
 """
 Stealth Global
 """
-context = None
-
 import os
 from configobj import ConfigObj
 from validate import Validator
 import importlib
+
+context = None
 
 
 class Config(object):

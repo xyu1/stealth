@@ -112,8 +112,11 @@ class RequestRule(Rule):
 class QueryStringRule(Rule):
 
     def __init__(self, querystring_name, vfunc, errfunc):
-        getter = lambda req: req.get_param(querystring_name)
-        Rule.__init__(self, vfunc=vfunc, getter=getter, errfunc=errfunc)
+        # getter = lambda req: req.get_param(querystring_name)
+        # Rule.__init__(self, vfunc=vfunc, getter=getter, errfunc=errfunc)
+        Rule.__init__(self, vfunc=vfunc,
+          getter=lambda req: req.get_param(querystring_name),
+          errfunc=errfunc)
 
 # parameter rules
 
