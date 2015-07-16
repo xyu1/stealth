@@ -1,12 +1,12 @@
 """
 Stealth Global
 """
-context = None
-
 import os
 from configobj import ConfigObj
 from validate import Validator
 import importlib
+
+context = None
 
 
 class Config(object):
@@ -31,8 +31,9 @@ config_files_root = {
     'priority': 2
 }
 config_files_user = {
-    'config': '{0:}/.stealth/config.ini'.format(os.environ['HOME']),
-    'configspec': '{0:}/.stealth/configspec.ini'.format(os.environ['HOME']),
+    'config': '{0:}/.stealth/config.ini'.format(os.environ.get('HOME')),
+    'configspec': '{0:}/.stealth/configspec.ini'.format(
+        os.environ.get('HOME')),
     'status': False,
     'priority': 1
 }

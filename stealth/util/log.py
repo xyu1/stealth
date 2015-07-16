@@ -8,7 +8,9 @@ _loggers = {}
 def setup():
     log_config = config.dict()
     log_config.update({'version': 1})
-    dictConfig(log_config)
+    # TMP TMP TMP TMP TMP TMP
+    # dictConfig(log_config)
+    # TMP TMP TMP TMP TMP TMP
 
 
 class ContextAdapter(logging.LoggerAdapter):

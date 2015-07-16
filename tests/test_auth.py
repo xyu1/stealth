@@ -26,6 +26,7 @@ fakeredis.FakeRedis.pexpire = fakeredis_pexpire
 def fakeredis_connection():
     return fakeredis.FakeRedis()
 
+
 def _tuple_to_cache_key(t):
     """Convert a tuple to a cache key."""
     key = ''
@@ -37,9 +38,11 @@ def _tuple_to_cache_key(t):
 
 __unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
 
+
 # NOTE: from __init__.py testbase
 def create_project_id():
     return str(random.randrange(100000, 9999999))
+
 
 class Response(object):
     def __init__(self):
@@ -104,7 +107,8 @@ class TestAuthApp(TestCase):
         self.auth(env, self.resp.start_response)
 
         self.assertEqual(self.resp.status, falcon.HTTP_204)
-        self.assertEqual(self.resp.headers, [("X-AUTH-TOKEN", str(self.projid))])
+        self.assertEqual(self.resp.headers,
+          [("X-AUTH-TOKEN", str(self.projid))])
 
     @httpretty.activate
     def test_auth_failure(self):
@@ -128,7 +132,8 @@ class TestAuthApp(TestCase):
             url,
             status=200,
             body=body)
-        self.auth = auth_app.app(self.redis_client, auth_url=self.auth_url, admin_name=admin_name, admin_pass=admin_pass)
+        self.auth = auth_app.app(self.redis_client,
+          auth_url=self.auth_url, admin_name=admin_name, admin_pass=admin_pass)
 
         ##
         self.auth = auth_app.app(self.redis_client, auth_url=self.auth_url)
@@ -148,9 +153,11 @@ class TestAuthApp(TestCase):
         env['HTTP_X_AUTH_TOKEN'] = 'mocking'
         self.auth(env, self.resp.start_response)
 
-        ## 
-        cache_data = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack('{"token": "mocking", "tenant": '+str(self.projid) + ', "expires": "' + \
-            str(timeutils.utcnow() + datetime.timedelta(seconds=3000)) + \
+        ##
+        cache_data = msgpack.Packer(encoding='utf-8',
+            use_bin_type=True).pack('{"token": "mocking", "tenant": ' +
+            str(self.projid) + ', "expires": "' +
+            str(timeutils.utcnow() + datetime.timedelta(seconds=3000)) +
             '"}')
         cache_key = _tuple_to_cache_key((self.projid, self.auth_url))
         self.redis_client.set(cache_key, cache_data)
@@ -160,15 +167,18 @@ class TestAuthApp(TestCase):
 class Requests(object):
     def __init__(self, headers):
         self._headers = headers
+
     @property
     def headers(self):
         return self._headers
 
+
 class Responses(object):
     def __init__(self):
         self._headers = dict()
+
     def set_header(self, name, value):
-        self._headers[name]=value
+        self._headers[name] = value
 
 
 class TestAuthEndpoint(TestCase):
@@ -222,28 +232,23 @@ class TestAuthEndpoint(TestCase):
             url,
             status=200,
             body=body)
-        self.authserv = auth_endpoint.AuthServ(self.redis_client, auth_url=self.auth_url)
+        self.authserv = auth_endpoint.AuthServ(self.redis_client,
+          auth_url=self.auth_url)
 
         succ, msg = self.authserv.auth(self.req, self.resp, self.projid)
-        print (succ,  msg)
+        print(succ, msg)
 
+        # self.assertIn('X-AUTH-TOKEN', self.auth)
 
-
-
-        #self.assertIn('X-AUTH-TOKEN', self.auth)
-        
-        #print (self.resp._headers)
-
-
-
-
+        # print (self.resp._headers)
     '''
         env = {}
         env['HTTP_X_PROJECT_ID'] = self.projid
         self.auth(env, self.resp.start_response)
 
         self.assertEqual(self.resp.status, falcon.HTTP_204)
-        self.assertEqual(self.resp.headers, [("X-AUTH-TOKEN", str(self.projid))])
+        self.assertEqual(self.resp.headers,
+          [("X-AUTH-TOKEN", str(self.projid))])
 
     '''
 
@@ -269,7 +274,8 @@ class TestAuthEndpoint(TestCase):
             url,
             status=200,
             body=body)
-        self.auth = auth_app.app(self.redis_client, auth_url=self.auth_url, admin_name=admin_name, admin_pass=admin_pass)
+        self.auth = auth_app.app(self.redis_client,
+          auth_url=self.auth_url, admin_name=admin_name, admin_pass=admin_pass)
 
         ##
         self.auth = auth_app.app(self.redis_client, auth_url=self.auth_url)
@@ -289,8 +295,10 @@ class TestAuthEndpoint(TestCase):
         env['HTTP_X_AUTH_TOKEN'] = 'mocking'
         self.auth(env, self.resp.start_response)
 
-        ## 
-        cache_data = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack('{"token": "mocking", "tenant": '+str(self.projid) + ', "expires": "' + \
+        ##
+        cache_data = msgpack.Packer(encoding='utf-8',
+            use_bin_type=True).pack('{"token": \
+            "mocking", "tenant": '+str(self.projid) + ', "expires": "' + \
             str(timeutils.utcnow() + datetime.timedelta(seconds=3000)) + \
             '"}')
         cache_key = _tuple_to_cache_key((self.projid, self.auth_url))

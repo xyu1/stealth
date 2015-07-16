@@ -1,11 +1,10 @@
 import logging
 import falcon
-from stealth.transport.wsgi import errors
 import stealth.util.auth_endpoint as auth
 import stealth.util.log as logging
-logger = logging.getLogger(__name__)
-
+from stealth.transport.wsgi import errors
 from stealth import conf
+logger = logging.getLogger(__name__)
 
 
 # Get the separated Redis Server for Auth

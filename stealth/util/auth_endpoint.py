@@ -27,11 +27,11 @@ import requests
 from keystoneclient import exceptions
 
 import msgpack
-from oslo.utils import timeutils
 import redis
 from redis import connection
 import simplejson as json
 from stealth import conf
+from oslo.utils import timeutils
 
 
 LOG = logging.getLogger('auth_endpoint')
@@ -387,12 +387,14 @@ def _validate_client_impersonation(redis_client, url, tenant, Admintoken):
 
 class AuthServ(object):
 
-    def __init__(self, redis_client, auth_url=None, admin_name=None, admin_pass=None):
+    def __init__(self, redis_client, auth_url=None,
+          admin_name=None, admin_pass=None):
+
         self.redis_client = redis_client
         if auth_url is None:
             self.auth_url = conf.auth.auth_url
         else:
-            self.auth_url = auth_url 
+            self.auth_url = auth_url
         if admin_name is None:
             admin_name = conf.auth.admin_name
         else:
@@ -404,9 +406,7 @@ class AuthServ(object):
         LOG.debug('Auth URL: {0:}'.format(self.auth_url))
         self.Admintoken = AdminToken(self.auth_url, admin_name, admin_pass)
 
-
     def auth(self, req, resp, project_id):
-
 
         try:
             token = None
@@ -419,7 +419,8 @@ class AuthServ(object):
                 self.auth_url, project_id, token)
 
             if not valid:
-                valid, Usertoken = _validate_client_impersonation(self.redis_client,
+                valid, Usertoken = _validate_client_impersonation(
+                    self.redis_client,
                     self.auth_url, project_id, self.Admintoken)
                 if valid and Usertoken and Usertoken['token']:
                     token = Usertoken['token']
