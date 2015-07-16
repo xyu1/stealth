@@ -1,0 +1,14 @@
+six
+schedule
+stoplight
+kombu
+-e git+https://github.com/python-zk/kazoo.git@master#egg=kazoo_master
+configobj
+falcon
+python-dateutil
+python-keystoneclient
+redis
+simplejson
+d2to1
+hiredis
+msgpack-python

@@ -1,0 +1,62 @@
+[server]
+port = 8080
+host = 0.0.0.0
+
+[logging]
+log_directory = log
+
+[loggers]
+    [[root]]
+        level = INFO
+        handlers = rotatelogfile,
+    [[stealth]]
+        level = INFO
+        handlers = rotatelogfile,
+     [[py.warnings]]
+        handlers = rotatelogfile,
+
+
+[handlers]
+    [[console]]
+        level = DEBUG
+        class = logging.StreamHandler
+        formatter = standard
+    [[logfile]]
+        level = INFO
+        class = logging.FileHandler
+        formatter = standard
+        filename = /tmp/stealth.log
+    [[syslog]]
+        level = INFO
+        class = logging.handlers.SysLogHandler
+        formatter = standard
+        address = /dev/log
+    [[rotatelogfile]]
+        level = INFO
+        class = logging.handlers.RotatingFileHandler
+        formatter = standard
+        maxBytes = 400000000
+        backupCount = 2
+        filename = /tmp/stealth.log
+[formatters]
+    [[standard]]
+        format = '%(asctime)s %(levelname)-5.5s [%(name)s/%(lineno)d][%(threadName)s] [%(request_id)s] : %(message)s'
+
+[api_configuration]
+max_returned_num = 1000
+
+[auth]
+auth_url = ''
+admin_name = ''
+admin_pass = ''
+
+[auth_redis]
+host = 127.0.0.1
+port = 6379
+redis_db=0
+password=None
+ssl_enable=None
+;ssl_keyfile=None
+;ssl_certfile=None
+;ssl_cert_reqs=None
+;ssl_ca_certs=None

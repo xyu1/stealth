@@ -1,0 +1,12 @@
+coverage
+ddt
+nose
+nose-exclude
+testtools
+testfixtures
+setuptools>=1.1.6
+pep8
+sentinels
+mock
+fakeredis>=0.5.1
+httpretty

@@ -1,0 +1,16 @@
+from stealth.util import auth_endpoint
+from stealth.util import auth_app
+from wsgiref import simple_server
+from stealth import conf
+
+
+# Get the separated Redis Server for Auth
+auth_redis_client = auth_endpoint.get_auth_redis_client()
+
+
+# Example uWSGI app calling.
+app = auth_app.app(auth_redis_client)
+
+server = simple_server.make_server('', 8000, app)
+print('Serving on port 8000 (Ctrl+C to end)...')
+server.serve_forever()
