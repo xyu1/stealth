@@ -38,13 +38,3 @@ class TestLogging(V1Base):
         with LogCapture() as capture:
             LOG.info("Testing Request ID outside wsgi call")
         self.assertFalse(self._testuuid(capture.records[0].request_id))
-
-    def test_logging_requestid(self):
-        self.simulate_get('/list', headers=self._hdrs)
-
-        LOG = logging.getLogger(__name__)
-
-        with LogCapture() as capture:
-            LOG.info("Testing Request ID")
-
-        self.assertTrue(self._testuuid(capture.records[0].request_id))

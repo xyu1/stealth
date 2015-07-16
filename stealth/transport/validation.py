@@ -1,9 +1,9 @@
 import re
 
 import falcon
-from stoplight import Rule, ValidationFailed, validation_function
-
 from stealth.transport.wsgi import errors
+
+from stoplight import Rule, ValidationFailed, validation_function
 
 
 VAULT_ID_MAX_LEN = 128

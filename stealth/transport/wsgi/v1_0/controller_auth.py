@@ -1,8 +1,8 @@
 import logging
 import falcon
-from stealth.transport.wsgi import errors
 import stealth.util.auth_endpoint as auth
 import stealth.util.log as logging
+from stealth.transport.wsgi import errors
 logger = logging.getLogger(__name__)
 
 from stealth import conf

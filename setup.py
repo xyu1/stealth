@@ -9,10 +9,10 @@ except ImportError:
     from setuptools import setup, find_packages
 else:
     REQUIRES = ['configobj', 'falcon', 'six', 'setuptools >= 1.1.6',
-                'python-dateutil', 'python-keystoneclient', 'taskflow',
+                'python-dateutil', 'python-keystoneclient', 'oslo.utils',
+                'oslo.config',
                 'redis', 'simplejson', 'd2to1', 'hiredis', 'msgpack-python',
-                'kazoo',
-                'cassandra-driver', 'stoplight']
+                'stoplight']
     setup(
         name='stealth',
         version='0.1',

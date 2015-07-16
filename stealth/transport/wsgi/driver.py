@@ -3,7 +3,6 @@ from wsgiref import simple_server
 import falcon
 
 from stealth.transport.wsgi import v1_0
-import stealth.model
 import stealth.util.log as logging
 from stealth import conf
 
@@ -13,7 +12,6 @@ class Driver(object):
     def __init__(self):
         self.app = None
         self._init_routes()
-        stealth.model.init_model()
 
     def _init_routes(self):
         """Initialize URI routes to resources."""
@@ -22,6 +20,8 @@ class Driver(object):
             ('', v1_0.public_endpoints()),
 
         ]
+
+        self.app = falcon.API()
 
         for version_path, endpoints in endpoints:
             for route, resource in endpoints:

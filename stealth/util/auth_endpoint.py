@@ -27,11 +27,11 @@ import requests
 from keystoneclient import exceptions
 
 import msgpack
-from oslo.utils import timeutils
 import redis
 from redis import connection
 import simplejson as json
 from stealth import conf
+from oslo.utils import timeutils
 
 
 LOG = logging.getLogger('auth_endpoint')
