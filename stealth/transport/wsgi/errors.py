@@ -2,15 +2,15 @@ import falcon
 import falcon.status_codes as status
 
 
-class HTTPInternalServerError(falcon.HTTPInternalServerError):
+# class HTTPInternalServerError(falcon.HTTPInternalServerError):
 
-    """Wraps falcon.HTTPServiceUnavailable"""
+#     """Wraps falcon.HTTPServiceUnavailable"""
 
-    TITLE = u'Service temporarily unavailable'
+#     TITLE = u'Service temporarily unavailable'
 
-    def __init__(self, description, **kwargs):
-        super(HTTPInternalServerError, self).__init__(
-            self.TITLE, description=description, **kwargs)
+#     def __init__(self, description, **kwargs):
+#         super(HTTPInternalServerError, self).__init__(
+#             self.TITLE, description=description, **kwargs)
 
 
 class HTTPUnauthorizedError(falcon.HTTPUnauthorized):
@@ -35,14 +35,14 @@ class HTTPUnauthorizedError(falcon.HTTPUnauthorized):
 #             self.TITLE, description=description)
 
 
-class HTTPBadRequestAPI(falcon.HTTPBadRequest):
+# class HTTPBadRequestAPI(falcon.HTTPBadRequest):
 
-    """Wraps falcon.HTTPBadRequest with a contextual title."""
+#     """Wraps falcon.HTTPBadRequest with a contextual title."""
 
-    TITLE = u'Invalid API request'
+#     TITLE = u'Invalid API request'
 
-    def __init__(self, description):
-        super(HTTPBadRequestAPI, self).__init__(self.TITLE, description)
+#     def __init__(self, description):
+#         super(HTTPBadRequestAPI, self).__init__(self.TITLE, description)
 
 
 # class HTTPBadRequestBody(falcon.HTTPBadRequest):
@@ -75,12 +75,12 @@ class HTTPBadRequestAPI(falcon.HTTPBadRequest):
 #         super(HTTPPreconditionFailed, self).__init__(self.TITLE, description)
 
 
-class HTTPNotFound(falcon.HTTPNotFound):
+# class HTTPNotFound(falcon.HTTPNotFound):
 
-    """Wraps falcon.HTTPNotFound"""
+#     """Wraps falcon.HTTPNotFound"""
 
-    def __init__(self):
-        super(HTTPNotFound, self).__init__()
+#     def __init__(self):
+#         super(HTTPNotFound, self).__init__()
 
 
 # class HTTPMethodNotAllowed(falcon.HTTPMethodNotAllowed):

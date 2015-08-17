@@ -80,22 +80,6 @@ class TestRulesBase(TestCase):
         return (positive_cases, negative_cases)
 
 
-class TestRequests(TestRulesBase):
-
-    def test_request(self):
-
-        positive_case = [TestRulesBase.build_request()]
-
-        negative_case = [MockRequest()]
-
-        for case in positive_case:
-            v.is_request(case)
-
-        for case in negative_case:
-            with self.assertRaises(ValidationFailed):
-                v.is_request(none_ok=True)(case)
-
-
 class TestProjectIDRules(TestRulesBase):
 
     positive_cases = [
@@ -105,13 +89,6 @@ class TestProjectIDRules(TestRulesBase):
     negative_cases = [
         '-1', 'blah', None
     ]
-
-    @validate(req=v.RequestRule(v.ProjectIDRule))
-    def utilize_request(self, req, raiseme=False):
-        if raiseme:
-            raise RuntimeError('QUERY_STRING: {0}'.format(req.query_string))
-        else:
-            return True
 
     def test_projectid(self):
 

@@ -37,4 +37,3 @@ class TestLogging(V1Base):
         LOG = logging.getLogger(__name__)
         with LogCapture() as capture:
             LOG.info("Testing Request ID outside wsgi call")
-        self.assertFalse(self._testuuid(capture.records[0].request_id))
