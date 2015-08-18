@@ -14,6 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+# Module can be simply actived as a uWsgi service app.
+# Example is in bin/authserv
+#
+
 
 import falcon
 from stealth.util.auth_endpoint import AdminToken, \
@@ -47,11 +52,14 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
         admin_pass = conf.auth.admin_pass
     Admintoken = AdminToken(auth_url, admin_name, admin_pass)
 
-    LOG.debug('Auth URL: {0:}'.format(auth_url))
+    LOG.debug('App: Auth URL: {0:}'.format(auth_url))
 
     def auth(env, start_response):
         try:
-            tenant = env['HTTP_X_PROJECT_ID']
+            if 'HTTP_X_PROJECT_ID' in env:
+                project_id = env['HTTP_X_PROJECT_ID']
+            else:
+                project_id = env['PATH_INFO'][env['PATH_INFO'].rfind('/') + 1:]
             token = ''
             valid = False
 
@@ -59,29 +67,29 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
                 token = env['HTTP_X_AUTH_TOKEN']
 
             valid, token = _validate_client_token(redis_client,
-                auth_url, tenant, token)
+                auth_url, project_id, token)
 
             if not valid:
                 valid, Usertoken = _validate_client_impersonation(redis_client,
-                    auth_url, tenant, Admintoken)
+                    auth_url, project_id, Admintoken)
                 if valid and Usertoken and Usertoken['token']:
                     token = Usertoken['token']
                     env['HTTP_X_AUTH_TOKEN'] = token
 
             # validate the client and fill out the environment it's valid
             if valid:
-                LOG.debug(('Auth Token validated.'))
-                start_response(status='204 No Content',
-                    headers=[('X-AUTH-TOKEN', token)])
+                LOG.debug(('App: Auth Token validated.'))
+                start_response('204 No Content',
+                    [('X-AUTH-TOKEN', token)])
                 return []
 
             else:
                 # Validation failed for some reason, just error out as a 401
-                LOG.error(('Auth Token validation failed.'))
+                LOG.error(('App: Auth Token validation failed.'))
                 return _http_unauthorized(start_response)
         except (KeyError, LookupError):
             # Header failure, error out with 412
-            LOG.error(('Missing required headers.'))
+            LOG.error(('App: Missing required headers.'))
             return _http_precondition_failed(start_response)
 
     return auth

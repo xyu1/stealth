@@ -163,7 +163,7 @@ class UserToken(TokenBase):
         except (exceptions.AuthorizationFailure,
                 exceptions.Unauthorized) as ex:
             # Provided data was invalid and authorization failed
-            msg = ('Failed to authenticate against %(s_url)s'
+            msg = ('Endpoint: Failed to authenticate against %(s_url)s'
                 ' - %(s_except)s') % {
                 's_url': self.auth_url,
                 's_except': str(ex)
@@ -173,7 +173,7 @@ class UserToken(TokenBase):
             self._expires = None
         except Exception as ex:
             # Provided data was invalid or something else went wrong
-            msg = ('Failed to authenticate against %(s_url)s'
+            msg = ('Endpoint: Failed to authenticate against %(s_url)s'
                 ' - %(s_except)s') % {
                 's_url': self.auth_url,
                 's_except': str(ex)
@@ -256,7 +256,8 @@ def _send_data_to_cache(redis_client, url, token_data):
         return True
 
     except Exception as ex:
-        msg = ('Failed to cache the data - Exception: %(s_except)s') % {
+        msg = ('Endpoint: Failed to cache the data - Exception: \
+            %(s_except)s') % {
             's_except': str(ex),
         }
         LOG.error(msg)
@@ -295,7 +296,7 @@ def _retrieve_data_from_cache(redis_client, url, tenant, token):
 
         except Exception as ex:
             # The cached object didn't match what we expected
-            msg = ('Stored Data does not contain any credentials - '
+            msg = ('Endpoint: Stored Data does not contain any credentials - '
                 'Exception: %(s_except)s; Data: $(s_data)s') % {
                 's_except': str(ex),
                 's_data': data
@@ -341,7 +342,7 @@ def _validate_client_token(redis_client, url, tenant, token):
         return True, token_data['token']
 
     except Exception as ex:
-        msg = ('Error while trying to authenticate against'
+        msg = ('Endpoint: Error while trying to authenticate against'
             ' %(s_url)s - %(s_except)s') % {
             's_url': url,
             's_except': str(ex)
@@ -376,7 +377,7 @@ def _validate_client_impersonation(redis_client, url, tenant, Admintoken):
         return True, user_token.token_data
 
     except Exception as ex:
-        msg = ('Error while trying to authenticate against'
+        msg = ('Endpoint: Error while trying to authenticate against'
             ' %(s_url)s - %(s_except)s') % {
             's_url': url,
             's_except': str(ex)
