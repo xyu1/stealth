@@ -46,6 +46,7 @@ Installation
         git clone https://github.com/xyu1/stealth.git
         . bin/activate
         cd stealth
+        pip install netifaces
         python setup.py develop
 
     Copy over config files:
