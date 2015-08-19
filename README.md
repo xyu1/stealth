@@ -55,11 +55,6 @@ Installation
         . bin/activate
         pip install netifaces oslo.config oslo.utils
 
-        # NOTE(2015-08-19): You may need to create directory lib/python3.4/site-packages/oslo, and inside oslo/ create symlinks as
-        #   ln -s ../oslo_config config
-        #   ln -s ../oslo_utils utils
-        # Then go back the working directory.
-
         # Retrieve the latest.
         git clone https://github.com/xyu1/stealth.git
         cd stealth

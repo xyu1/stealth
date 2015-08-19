@@ -31,7 +31,7 @@ import redis
 from redis import connection
 import simplejson as json
 from stealth import conf
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 
 LOG = logging.getLogger('auth_endpoint')
