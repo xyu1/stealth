@@ -1,4 +1,3 @@
-# Copyright (c) 2014 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -331,15 +330,14 @@ def _validate_client_token(redis_client, url, tenant, token):
             if TokenBase.will_expire_soon(TokenBase.
                     normal_time(token_data['expires'])):
                 LOG.info('Token has expired')
-                token_data = None
-        if token_data is None:
-            LOG.debug(('Unable to get Access information for '
-                '%(s_tenant)s') % {
-                's_tenant': tenant
-            })
-            return False, None
+            else:
+              return True, token_data['token']
 
-        return True, token_data['token']
+        LOG.debug(('Unable to get Access information for '
+            '%(s_tenant)s') % {
+            's_tenant': tenant
+        })
+        return False, None
 
     except Exception as ex:
         msg = ('Endpoint: Error while trying to authenticate against'
@@ -421,22 +419,22 @@ class AuthServ(object):
 
             if not valid:
                 valid, Usertoken = _validate_client_impersonation(
-                    self.redis_client,
-                    self.auth_url, project_id, self.Admintoken)
-                if valid and Usertoken and Usertoken['token']:
-                    token = Usertoken['token']
+                    self.redis_client, self.auth_url, project_id,
+                    self.Admintoken)
+
+                if not valid:
+                    # Validation failed for some reason, just error out as a 401
+                    LOG.error('Auth Token validation failed.')
+                    return False, 'Auth Token validation failed.'
+
+                #WHY NOT? else if Usertoken and Usertoken['token']:
+                token = Usertoken['token']
 
             # validate the client and fill out the request it's valid
-            if valid:
-                LOG.debug('Auth Token validated.')
-                if token is not None:
-                    resp.set_header(name='X-AUTH-TOKEN', value=token)
-
-                return True, None
-            else:
-                # Validation failed for some reason, just error out as a 401
-                LOG.error('Auth Token validation failed.')
-                return False, 'Auth Token validation failed.'
+            LOG.debug('Auth Token validated.')
+            #WHY NOT? if token is not None:
+            resp.set_header(name='X-AUTH-TOKEN', value=token)
+            return True, None
 
         except (KeyError, LookupError):
             # Header failure, error out with 412
