@@ -34,13 +34,3 @@ class TestRaxAuth(V1Base):
     def test_rax_auth_failure(self):
         response = self.simulate_get('/auth/' + self._projid,
             headers=self._hdrs)
-
-    '''
-    def test_error_returns(self):
-        from deucecnc.model import List
-
-        with patch.object(List, 'listing', return_value=None):
-            response = self.simulate_get('/list'.
-                format(self._projid), headers=self._hdrs)
-            self.assertEqual(self.srmock.status, falcon.HTTP_500)
-    '''
