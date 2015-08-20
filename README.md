@@ -62,6 +62,7 @@ Installation
         pip install --upgrade setuptools
 
         # Build.
+        python setup.py build
         python setup.py install
 
     Copy over config files and edit.
