@@ -7,7 +7,6 @@ from mock import patch
 from stealth.transport.wsgi import errors
 
 
-
 class TestAuth(V1Base):
     def setUp(self):
         super(TestAuth, self).setUp()
@@ -15,7 +14,8 @@ class TestAuth(V1Base):
         self._projid = self.create_project_id()
 
     def test_auth(self):
-        response = self.simulate_get('/auth/'+self._projid, headers=self._hdrs)
+        response = self.simulate_get('/auth/' + self._projid,
+            headers=self._hdrs)
 
     '''
     def test_error_returns(self):
