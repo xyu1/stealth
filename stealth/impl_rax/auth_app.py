@@ -21,7 +21,7 @@
 
 
 import falcon
-from stealth.util.auth_endpoint import AdminToken, \
+from stealth.impl_rax.auth_endpoint import AdminToken, \
     LOG, _validate_client_impersonation, _validate_client_token
 from stealth import conf
 
