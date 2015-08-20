@@ -41,20 +41,38 @@ Installation
 
     Install the code.
 
+        # Install dependencies.
+        sudo apt-get install redis
+        sudo apt-get install python-software-properties
+        sudo add-apt-repository cloud-archive:[RELEASE_NAME]
+        # NOTE(2015-08-19): RELEASE_NAME must be one of ['folsom', 'folsom-proposed', 'grizzly', 'grizzly-proposed', 'havana', 'havana-proposed', 'icehouse', 'icehouse-proposed', 'juno', 'juno-proposed', 'kilo', 'kilo-proposed', 'tools', 'tools-proposed']
+        sudo apt-get update
+        sudo apt-get install python-oslo.utils python-oslo.config
+
+        # Create the work directory.
         virtualenv -p /usr/bin/python3.4 stealth
         cd stealth
-        git clone https://github.com/xyu1/stealth.git
         . bin/activate
-        cd stealth
-        pip install netifaces
-        python setup.py develop
+        pip install netifaces oslo.config oslo.utils
 
-    Copy over config files:
+        # Retrieve the latest.
+        git clone https://github.com/xyu1/stealth.git
+        cd stealth
+
+        pip install --upgrade setuptools
+
+        # Build.
+        python setup.py install
+
+    Copy over config files and edit.
 
         mkdir ~/.stealth
         cp ini/config.ini ~/.stealth/config.ini
 
-    Start it up:
+    Start up the service by two ways.
 
         stealth-server
+        authserv
 
+    Test command.
+        curl -v 127.0.0.1:8080/auth/[USER_PROJECT_ID]

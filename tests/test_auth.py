@@ -9,7 +9,7 @@ import mock
 from stealth.util import auth_endpoint
 import httpretty
 import datetime
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 
 # Monkey patch the FakeRedis so we can expire data - even if it does nothing
