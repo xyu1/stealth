@@ -9,7 +9,7 @@ import stealth.impl_rax.auth_endpoint as auth
 
 
 class TestRaxAuth(V1Base):
-    # Monkey patch the AUTH 
+    # Monkey patch the AUTH
     class FakeRaxAuth(object):
         def __init__(self):
             pass
