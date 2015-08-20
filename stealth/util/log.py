@@ -1,5 +1,6 @@
 import logging
 from logging.config import dictConfig
+from stealth.common import local
 from stealth import config
 _loggers = {}
 
