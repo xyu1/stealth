@@ -1,6 +1,6 @@
 import logging
 import falcon
-import stealth.util.auth_endpoint as auth
+import stealth.impl_rax.auth_endpoint as auth
 import stealth.util.log as logging
 from stealth.transport.wsgi import errors
 from stealth import conf
