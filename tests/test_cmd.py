@@ -18,6 +18,7 @@ class FakeDriver(object):
     def listenInterrupt(self):
         raise KeyboardInterrupt
 
+
 class TestCmd(TestCase):
 
     def setUp(self):
@@ -30,11 +31,13 @@ class TestCmd(TestCase):
     def test_server1(self):
         stealth.cmd.server.run()
 
-    @patch('stealth.transport.wsgi.driver.Driver.listen', FakeDriver.listenInterrupt)
+    @patch('stealth.transport.wsgi.driver.Driver.listen',
+          FakeDriver.listenInterrupt)
     def test_server2(self):
         stealth.cmd.server.run()
 
-    @patch('stealth.transport.wsgi.driver.Driver.listen', FakeDriver.listenExcept)
+    @patch('stealth.transport.wsgi.driver.Driver.listen',
+          FakeDriver.listenExcept)
     def test_server3(self):
         with self.assertRaises(SystemExit):
             with self.assertRaises(Exception):

@@ -1,5 +1,6 @@
 import logging
 import falcon
+# Load Rackspace version of auth endpoint.
 import stealth.impl_rax.auth_endpoint as auth
 import stealth.util.log as logging
 from stealth.transport.wsgi import errors
