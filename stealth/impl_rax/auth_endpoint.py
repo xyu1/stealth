@@ -20,23 +20,21 @@ import pytz
 import dateutil
 import dateutil.parser
 from abc import ABCMeta, abstractmethod, abstractproperty
-
 import requests
-
 from keystoneclient import exceptions
-
 import msgpack
 import redis
 from redis import connection
 import simplejson as json
 from stealth import conf
 from oslo_utils import timeutils
-
-
-LOG = logging.getLogger('auth_endpoint')
+import hmac
+import hashlib
+import base64
 
 
 STALE_TOKEN_DURATION = 30
+LOG = logging.getLogger('auth_endpoint')
 
 
 class TokenBase(object):
@@ -219,18 +217,11 @@ def get_auth_redis_client():
     return redis.Redis(connection_pool=pool)
 
 
-def _tuple_to_cache_key(t):
+def _generate_cache_key(t):
     """Convert a tuple to a cache key."""
-    key = ''
-    if t and len(t) > 0:
-        key = '(%(s_data)s)' % {
-            's_data': ','.join(t)
-        }
-    return key
-
-
-__packer = msgpack.Packer(encoding='utf-8', use_bin_type=True)
-__unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
+    hashval = hmac.new('A_SECRET_KEY'.encode(), t.encode(),
+        hashlib.sha256).hexdigest()
+    return hashval
 
 
 def _send_data_to_cache(redis_client, url, token_data):
@@ -243,16 +234,16 @@ def _send_data_to_cache(redis_client, url, token_data):
     """
     try:
         # Convert the storable format
-        cache_data = __packer.pack(json.dumps(token_data.token_data))
+        cache_data = json.dumps(token_data.token_data, sort_keys=True)
 
         # Build the cache key and store the value
         # Use the token's expiration time for the cache expiration
-        cache_key = _tuple_to_cache_key((
-            token_data.tenant, url))
+        cache_key = _generate_cache_key(cache_data)
+
         redis_client.set(cache_key, cache_data)
         redis_client.pexpireat(cache_key, token_data.expires_norm)
 
-        return True
+        return True, cache_key
 
     except Exception as ex:
         msg = ('Endpoint: Failed to cache the data - Exception: \
@@ -260,23 +251,25 @@ def _send_data_to_cache(redis_client, url, token_data):
             's_except': str(ex),
         }
         LOG.error(msg)
-        return False
+        return False, None
 
 
-def _retrieve_data_from_cache(redis_client, url, tenant, token):
+def _retrieve_data_from_cache(redis_client, url, tenant, cache_key):
     """Retrieve the authentication data from cache
 
     :param redis_client: redis.Redis object connected to the redis cache
     :param url: URL used for authentication
     :param tenant: tenant id of the user
-    :param token: auth_token for the user
+    :param cache_key: client side auth_token for the tenant_id
 
-    :returns: cached user info on success or None
+    :returns: cached user info on success, or None
     """
+    if cache_key is None:
+        return None
+
     cached_data = None
     try:
-        # Try to get the data from the cache
-        cache_key = _tuple_to_cache_key((tenant, url))
+        # Look up the token from the cache
         cached_data = redis_client.get(cache_key)
 
     except Exception:
@@ -290,8 +283,7 @@ def _retrieve_data_from_cache(redis_client, url, tenant, token):
         data = None
 
         try:
-            data = __unpacker(cached_data)
-            return json.loads(data)
+            return json.loads(cached_data)
 
         except Exception as ex:
             # The cached object didn't match what we expected
@@ -310,28 +302,28 @@ def _retrieve_data_from_cache(redis_client, url, tenant, token):
         return None
 
 
-def _validate_client_token(redis_client, url, tenant, token):
-    """Validate Client Token
+def _validate_client_token(redis_client, url, tenant, cache_key):
+    """Validate Input Client Token
 
     :param redis_client: redis.Redis object connected to the redis cache
     :param url: Keystone Identity URL to authenticate against
     :param tenant: tenant id of user data to retrieve
-    :param token: auth_token for the tenant_id
+    :param cache_key: client side auth_token for the tenant_id
 
-    :returns: True on success, otherwise False
+    :returns: True and token-data on success, False and None otherwise
     """
 
     try:
         # Try to get the client's access infomration from cache
         token_data = _retrieve_data_from_cache(redis_client,
-                url, tenant, token)
+                url, tenant, cache_key)
         if token_data is not None:
             norm = TokenBase.normal_time(token_data['expires'])
             if TokenBase.will_expire_soon(TokenBase.
                     normal_time(token_data['expires'])):
                 LOG.info('Token has expired')
             else:
-              return True, token_data['token']
+                return True, token_data['token']
 
         LOG.debug(('Unable to get Access information for '
             '%(s_tenant)s') % {
@@ -367,12 +359,13 @@ def _validate_client_impersonation(redis_client, url, tenant, Admintoken):
                 '%(s_tenant)s') % {
                 's_tenant': tenant
             })
-            return False, None
+            return False, None, None
 
         # cache the data so it is easier to access next time
-        _send_data_to_cache(redis_client, url=url, token_data=user_token)
+        retval, cache_key = _send_data_to_cache(redis_client,
+            url=url, token_data=user_token)
 
-        return True, user_token.token_data
+        return True, user_token.token_data, cache_key
 
     except Exception as ex:
         msg = ('Endpoint: Error while trying to authenticate against'
@@ -381,7 +374,7 @@ def _validate_client_impersonation(redis_client, url, tenant, Admintoken):
             's_except': str(ex)
         }
         LOG.debug(msg)
-        return False, None
+        return False, None, None
 
 
 class AuthServ(object):
@@ -408,32 +401,43 @@ class AuthServ(object):
     def auth(self, req, resp, project_id):
 
         try:
-            token = None
+            auth_token = None
             valid = False
+            cache_key = None
 
             if 'X-AUTH-TOKEN' in req.headers:
-                token = req.headers['X-AUTH-TOKEN']
+                cache_key = req.headers['X-AUTH-TOKEN']
 
-            valid, token = _validate_client_token(self.redis_client,
-                self.auth_url, project_id, token)
+            valid, auth_token = _validate_client_token(self.redis_client,
+                self.auth_url, project_id, cache_key)
 
             if not valid:
-                valid, Usertoken = _validate_client_impersonation(
+                valid, Usertoken, cache_key = _validate_client_impersonation(
                     self.redis_client, self.auth_url, project_id,
                     self.Admintoken)
 
                 if not valid:
-                    # Validation failed for some reason, just error out as a 401
+                    # Validation failed for some reason,
+                    # just error out as a 401
                     LOG.error('Auth Token validation failed.')
                     return False, 'Auth Token validation failed.'
 
-                #WHY NOT? else if Usertoken and Usertoken['token']:
-                token = Usertoken['token']
+                # WHY NOT? else if Usertoken and Usertoken['token']:
+                auth_token = Usertoken['token']
+
+            #
+            # auth_token here is the real auth token from Keystone,
+            # It can be replaced in the user requests and forward
+            # to the service providers.
+            #
+            # req.headers['X-AUTH-TOKEN'] = auth_token
+            #
 
             # validate the client and fill out the request it's valid
             LOG.debug('Auth Token validated.')
-            #WHY NOT? if token is not None:
-            resp.set_header(name='X-AUTH-TOKEN', value=token)
+            # WHY NOT? if token is not None:
+            # Return only generated hmac values back to the users.
+            resp.set_header(name='X-AUTH-TOKEN', value=cache_key)
             return True, None
 
         except (KeyError, LookupError):
