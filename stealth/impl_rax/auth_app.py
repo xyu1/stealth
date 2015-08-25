@@ -55,15 +55,12 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
 
     def auth(env, start_response):
         try:
-            if 'HTTP_X_PROJECT_ID' in env:
-                project_id = env['HTTP_X_PROJECT_ID']
-            else:
-                project_id = env['PATH_INFO'][env['PATH_INFO'].rfind('/') + 1:]
+            project_id = env['X-PROJECT-ID']
             token = ''
             valid = False
 
-            if 'HTTP_X_AUTH_TOKEN' in env:
-                token = env['HTTP_X_AUTH_TOKEN']
+            if 'X-AUTH-TOKEN' in env:
+                token = env['X-AUTH-TOKEN']
 
             valid, token = _validate_client_token(redis_client,
                 auth_url, project_id, token)
@@ -73,7 +70,7 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
                     auth_url, project_id, Admintoken)
                 if valid and Usertoken and Usertoken['token']:
                     token = Usertoken['token']
-                    env['HTTP_X_AUTH_TOKEN'] = token
+                    env['X-AUTH-TOKEN'] = token
 
             # validate the client and fill out the environment it's valid
             if valid:

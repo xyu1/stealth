@@ -397,12 +397,14 @@ class AuthServ(object):
         LOG.debug('Auth URL: {0:}'.format(self.auth_url))
         self.Admintoken = AdminToken(self.auth_url, admin_name, admin_pass)
 
-    def auth(self, req, resp, project_id):
+    def auth(self, req, resp):
 
         try:
             auth_token = None
             valid = False
             cache_key = None
+
+            project_id = req.headers['X-PROJECT-ID']
 
             if 'X-AUTH-TOKEN' in req.headers:
                 cache_key = req.headers['X-AUTH-TOKEN']
@@ -434,10 +436,8 @@ class AuthServ(object):
 
             # validate the client and fill out the request it's valid
             LOG.debug('Auth Token validated.')
-            # WHY NOT? if token is not None:
             # Return only generated hmac values back to the users.
-            resp.set_header(name='X-AUTH-TOKEN', value=cache_key)
-            return True, None
+            return True, auth_token
 
         except (KeyError, LookupError):
             # Header failure, error out with 412

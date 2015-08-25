@@ -45,14 +45,14 @@ class HTTPUnauthorizedError(falcon.HTTPUnauthorized):
 #         super(HTTPBadRequestAPI, self).__init__(self.TITLE, description)
 
 
-# class HTTPBadRequestBody(falcon.HTTPBadRequest):
+class HTTPBadRequestBody(falcon.HTTPBadRequest):
 
-#     """Wraps falcon.HTTPBadRequest with a contextual title."""
+    """Wraps falcon.HTTPBadRequest with a contextual title."""
 
-#     TITLE = u'Invalid request body'
+    TITLE = u'Invalid request body'
 
-#     def __init__(self, description):
-#         super(HTTPBadRequestBody, self).__init__(self.TITLE, description)
+    def __init__(self, description):
+        super(HTTPBadRequestBody, self).__init__(self.TITLE, description)
 
 
 # class HTTPConflict(falcon.HTTPConflict):

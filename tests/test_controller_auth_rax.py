@@ -14,10 +14,10 @@ class TestRaxAuth(V1Base):
         def __init__(self):
             pass
 
-        def Success(self, req, resp, project_id):
+        def Success(self, req, resp):
             return True, None
 
-        def Failure(self, req, resp, project_id):
+        def Failure(self, req, resp):
             return False, "mocking error"
 
     def setUp(self):
@@ -27,10 +27,16 @@ class TestRaxAuth(V1Base):
 
     @patch('stealth.impl_rax.auth_endpoint.AuthServ.auth', FakeRaxAuth.Success)
     def test_rax_auth_success(self):
-        response = self.simulate_get('/auth/' + self._projid,
-            headers=self._hdrs)
+        hdrs = self._hdrs.copy()
+        hdrs['X-PROJECT-ID'] = self._projid
+        response = self.simulate_get('/auth',
+            headers=hdrs)
 
     @patch('stealth.impl_rax.auth_endpoint.AuthServ.auth', FakeRaxAuth.Failure)
     def test_rax_auth_failure(self):
-        response = self.simulate_get('/auth/' + self._projid,
-            headers=self._hdrs)
+        hdrs = self._hdrs.copy()
+        response = self.simulate_get('/auth',
+            headers=hdrs)
+        hdrs['X-PROJECT-ID'] = self._projid
+        response = self.simulate_get('/auth',
+            headers=hdrs)

@@ -76,4 +76,9 @@ Installation
         authserv
 
     Test command.
-        curl -v 127.0.0.1:8080/auth/[USER_PROJECT_ID]
+        curl -H "X-PROJECT-ID: {project-id}" -v 127.0.0.1:8080/auth
+        curl -H "X-PROJECT-ID: {project-id}" -H "X-AUTH-TOKEN: {previously-returned-token}" -v 127.0.0.1:8080/auth
+
+
+
+

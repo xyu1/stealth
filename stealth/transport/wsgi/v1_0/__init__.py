@@ -5,7 +5,7 @@ def public_endpoints():
 
     return [
 
-        ('/auth/{project_id}',
+        ('/auth',
          controller_auth.ItemResource()),
 
     ]
