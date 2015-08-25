@@ -7,6 +7,8 @@ from stealth.transport.wsgi import hooks
 import stealth.util.log as logging
 from stealth import conf
 
+LOG = logging.getLogger(__name__)
+
 
 class Driver(object):
 
@@ -40,9 +42,8 @@ class Driver(object):
     def listen(self):
         """Self-host using 'bind' and 'port' from conf"""
         msgtmpl = (u'Serving on host %(bind)s:%(port)s')
-        logger = logging.getLogger(__name__)
-        logger.info(msgtmpl,
-                    {'bind': conf.server.host, 'port': conf.server.port})
+        LOG.info(msgtmpl,
+            {'bind': conf.server.host, 'port': conf.server.port})
 
         httpd = simple_server.make_server(conf.server.host,
                                           conf.server.port,
