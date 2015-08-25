@@ -5,7 +5,7 @@ import stealth.impl_rax.auth_endpoint as auth
 import stealth.util.log as logging
 from stealth.transport.wsgi import errors
 from stealth import conf
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 # Get the separated Redis Server for Auth
@@ -18,7 +18,7 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id):
         resp.location = '/auth/%s' % (project_id)
-        logger.info('Auth [{0}]... '.format(project_id))
+        LOG.info('Auth [{0}]... '.format(project_id))
         res, err = authserv.auth(req, resp, project_id)
         if res is False:
             raise errors.HTTPUnauthorizedError(err)

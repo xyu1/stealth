@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import functools
-import logging
 import datetime
+import stealth.util.log as logging
 import pytz
 import dateutil
 import dateutil.parser
@@ -32,9 +32,8 @@ import hmac
 import hashlib
 import base64
 
-
 STALE_TOKEN_DURATION = 30
-LOG = logging.getLogger('auth_endpoint')
+LOG = logging.getLogger(__name__)
 
 
 class TokenBase(object):

@@ -25,5 +25,6 @@ class ContextAdapter(logging.LoggerAdapter):
 
 def getLogger(name):
     if name not in _loggers:
-        _loggers[name] = ContextAdapter(logging.getLogger(), extra={})
+        _loggers[name] = ContextAdapter(logging.getLogger(name), extra={})
+    setup()
     return _loggers[name]

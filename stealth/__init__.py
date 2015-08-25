@@ -11,8 +11,7 @@ context = None
 
 class Config(object):
 
-    '''Builds deuce conf on passing in a dict.'''
-
+    '''Builds configuration on passing in a dict.'''
     def __init__(self, config):
         for k, v in config.items():
             if isinstance(v, dict):
@@ -38,14 +37,14 @@ config_files_user = {
     'priority': 1
 }
 
-config_files_deuce = {
+config_files_stealth = {
     'config': os.path.abspath('ini/config.ini'),
     'configspec': os.path.abspath('ini/configspec.ini'),
     'status': True,
     'priority': 3
 }
 
-conf_list = [config_files_root, config_files_user, config_files_deuce]
+conf_list = [config_files_root, config_files_user, config_files_stealth]
 
 
 def get_correct_conf(conf_list):
