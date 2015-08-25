@@ -1,6 +1,6 @@
 [server]
 port = 8080
-host = 0.0.0.0
+host = 127.0.0.1
 
 [logging]
 log_directory = log
@@ -12,7 +12,7 @@ log_directory = log
     [[stealth]]
         level = INFO
         handlers = rotatelogfile,
-     [[py.warnings]]
+    [[py.warnings]]
         handlers = rotatelogfile,
 
 
