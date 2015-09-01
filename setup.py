@@ -31,6 +31,7 @@ else:
             ]
         },
         scripts=[
+            'stealth/bin/auth-middleware.py',
             'stealth/bin/authserv'
         ],
         packages=find_packages(exclude=['tests*'])

@@ -50,10 +50,14 @@ Installation
         sudo apt-get install python-oslo.utils python-oslo.config
 
         # Create the work directory.
+        sudo pip install virtualenv --upgrade
         virtualenv -p /usr/bin/python3.4 stealth
         cd stealth
         . bin/activate
-        pip install netifaces oslo.config oslo.utils
+        pip install --upgrade netifaces oslo.config oslo.utils
+        pip3 uninstall gunicorn
+        pip3 install gunicorn
+
 
         # Retrieve the latest.
         git clone https://github.com/xyu1/stealth.git
