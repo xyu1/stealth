@@ -78,6 +78,7 @@ Installation
 
         stealth-server
         authserv
+        gunicorn auth-middleware:app
 
     Test command.
         curl -H "X-PROJECT-ID: {project-id}" -v 127.0.0.1:8080/auth
