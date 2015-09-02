@@ -1,27 +1,22 @@
-from stealth.impl_rax import auth_endpoint
-from stealth.impl_rax import auth_app
+from stealth.impl_rax.auth_endpoint import AdminToken, \
+    LOG, _validate_client_impersonation, _validate_client_token
+from stealth import conf
 
-from oslo_config import cfg
-_CONF = cfg.CONF
 
-def configure(config):
-    global _CONF
-    ##global LOG
+def _http_precondition_failed(start_response):
+    """Responds with HTTP 412."""
+    start_response('412 Precondition Failed', [('Content-Length', '0')])
+    return []
 
-    _CONF = config
-    _CONF.register_opts(AUTH_OPTIONS, group=AUTH_GROUP_NAME)
-    _CONF.register_opts(REDIS_OPTIONS, group=REDIS_GROUP_NAME)
 
-    ##logging.register(_CONF, AUTH_GROUP_NAME)
-    ##logging.setup(_CONF, AUTH_GROUP_NAME)
-    ##LOG = logging.getLogger(__name__)
+def _http_unauthorized(start_response):
+    """Responds with HTTP 401."""
+    start_response('401 Unauthorized', [('Content-Length', '0')])
+    return []
 
 
 def wrap(app, redis_client):
     """Wrap a WSGI app with Authentication middleware.
-
-    Takes configuration from oslo.config.cfg.CONF.
-    Requires auth.configure() be called first
 
     :param app: WSGI app to wrap
     :param redis_client: redis.Redis object connected to the redis cache
@@ -29,35 +24,46 @@ def wrap(app, redis_client):
     :returns: a new  WSGI app that wraps the original
     """
 
-    group = _CONF[AUTH_GROUP_NAME]
-    auth_url = group['auth_url']
-    blacklist_ttl = group['blacklist_ttl']
-    max_cache_life = group['max_cache_life']
+    auth_url = conf.auth.auth_url
+    admin_name = conf.auth.admin_name
+    admin_pass = conf.auth.admin_pass
+    Admintoken = AdminToken(auth_url, admin_name, admin_pass)
 
-    LOG.debug('Auth URL: {0:}'.format(auth_url))
+    # TODO:
+    # blacklist_ttl = conf.'blacklist_ttl'
+    # max_cache_life = conf.'max_cache_life'
 
     def middleware(env, start_response):
         try:
-            token = env['HTTP_X_AUTH_TOKEN']
-            tenant = env['HTTP_X_PROJECT_ID']
+            project_id = env['HTTP_X_PROJECT_ID']
+            token = ''
+            valid = False
+
+            if 'HTTP_X_AUTH_TOKEN' in env:
+                token = env['HTTP_X_AUTH_TOKEN']
+
+            valid, token = _validate_client_token(redis_client,
+                auth_url, project_id, token)
+
+            if not valid:
+                valid, Usertoken, cache_key = _validate_client_impersonation(redis_client,
+                    auth_url, project_id, Admintoken)
+                if valid and Usertoken and Usertoken['token']:
+                    token = Usertoken['token']
+                    env['HTTP_X_AUTH_TOKEN'] = token
 
             # validate the client and fill out the environment it's valid
-            if _validate_client(redis_client,
-                                auth_url,
-                                tenant,
-                                token,
-                                env,
-                                blacklist_ttl,
-                                max_cache_life):
-                LOG.debug(_('Auth Token validated.'))
+            if valid:
+                LOG.debug(('Middleware: Auth Token validated.'))
                 return app(env, start_response)
 
             else:
                 # Validation failed for some reason, just error out as a 401
-                LOG.error(_('Auth Token validation failed.'))
+                LOG.error(('Middleware: Auth Token validation failed.'))
                 return _http_unauthorized(start_response)
         except (KeyError, LookupError):
             # Header failure, error out with 412
-            LOG.error(_('Missing required headers.'))
+            LOG.error(('Middleware: Missing required headers.'))
             return _http_precondition_failed(start_response)
+
     return middleware
