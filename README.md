@@ -1,4 +1,4 @@
-STEALTH Validation Service []
+STEALTH Validation Middleware []
 =====
 
 Impersonation Token Assignment and Validation Service towards Openstack Identity Server
@@ -15,24 +15,39 @@ To be created.
 Features
 --------
 
+ * Authentication Middleware
+
+    Example starts up:
+
+        gunicorn -b 127.0.0.1:8999  stealth-middleware:app
+
+    APIs:
+
+        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"  -v 127.0.0.1:8999
+        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"  -H "X-AUTH-TOKEN: THE_USER_AUTH_TOKEN_HERE" -v  127.0.0.1:8999
+
  * Standalone Auth Service
 
-    Start it up:
+    Start up:
 
-        authserv
-
-    APIs:
-
-        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"   127.0.0.1:8000; echo
-        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"  -H "X-AUTH-TOKEN: THE_USER_AUTH_TOKEN_HERE"  127.0.0.1:8000; echo
-
-
- * Stealth Auth Endpoint
+        stealth-serv
 
     APIs:
 
-        curl -X GET -i  127.0.0.1:8080/auth/{THE_USER_PROJECT_ID_HERE}; echo
-        curl -X GET -i  -H "X-AUTH-TOKEN: THE_USER_AUTH_TOKEN_HERE"   127.0.0.1:8080/auth/{THE_USER_PROJECT_ID_HERE}; echo
+        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"  -v 127.0.0.1:8999
+        curl -X GET -i  -H "X-PROJECT-ID: THE_USER_PROJECT_ID_HERE"  -H "X-AUTH-TOKEN: THE_USER_AUTH_TOKEN_HERE" -v 127.0.0.1:8999
+
+
+ * Stealth Auth Endpoint plug-in for existing service
+
+    Example starts up:
+
+        stealth-server
+
+    APIs:
+
+        curl -X GET -v -i  127.0.0.1:8999/auth/{THE_USER_PROJECT_ID_HERE}
+        curl -X GET -v -i  -H "X-AUTH-TOKEN: THE_USER_AUTH_TOKEN_HERE"   127.0.0.1:8999/auth/{THE_USER_PROJECT_ID_HERE}
 
 
 
@@ -50,10 +65,14 @@ Installation
         sudo apt-get install python-oslo.utils python-oslo.config
 
         # Create the work directory.
+        sudo pip install virtualenv --upgrade
         virtualenv -p /usr/bin/python3.4 stealth
         cd stealth
         . bin/activate
-        pip install netifaces oslo.config oslo.utils
+        pip install --upgrade netifaces oslo.config oslo.utils
+        pip3 uninstall gunicorn
+        pip3 install gunicorn
+
 
         # Retrieve the latest.
         git clone https://github.com/xyu1/stealth.git
@@ -70,14 +89,6 @@ Installation
         mkdir ~/.stealth
         cp ini/config.ini ~/.stealth/config.ini
 
-    Start up the service by two ways.
-
-        stealth-server
-        authserv
-
-    Test command.
-        curl -H "X-PROJECT-ID: {project-id}" -v 127.0.0.1:8080/auth
-        curl -H "X-PROJECT-ID: {project-id}" -H "X-AUTH-TOKEN: {previously-returned-token}" -v 127.0.0.1:8080/auth
 
 
 
