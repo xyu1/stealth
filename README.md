@@ -76,13 +76,13 @@ Installation
 
     Start up the service by two ways.
 
+        gunicorn -b 127.0.0.1:8999  auth-middleware:app
         stealth-server
         authserv
-        gunicorn -b 127.0.0.1:8080  auth-middleware:app
 
     Test command.
-        curl -H "X-PROJECT-ID: {project-id}" -v 127.0.0.1:8080/auth
-        curl -H "X-PROJECT-ID: {project-id}" -H "X-AUTH-TOKEN: {previously-returned-token}" -v 127.0.0.1:8080/auth
+        curl -H "X-PROJECT-ID: {project-id}" -v 127.0.0.1:8999/auth
+        curl -H "X-PROJECT-ID: {project-id}" -H "X-AUTH-TOKEN: {previously-returned-token}" -v 127.0.0.1:8999/auth
 
 
 

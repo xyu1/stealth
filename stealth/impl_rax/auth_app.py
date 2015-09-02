@@ -20,9 +20,14 @@
 
 
 import falcon
-from stealth.impl_rax.auth_endpoint import AdminToken, \
-    LOG, _validate_client_impersonation, _validate_client_token
+from stealth.impl_rax.auth_token import AdminToken
+from stealth.impl_rax.auth_token_cache import \
+    _validate_client_impersonation, _validate_client_token
 from stealth import conf
+
+import stealth.util.log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 def _http_precondition_failed(start_response):
@@ -55,28 +60,29 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
 
     def auth(env, start_response):
         try:
-            project_id = env['X-PROJECT-ID']
+            project_id = env['HTTP_X_PROJECT_ID']
             token = ''
+            cache_key = ''
             valid = False
 
-            if 'X-AUTH-TOKEN' in env:
-                token = env['X-AUTH-TOKEN']
+            if 'HTTP_X_AUTH_TOKEN' in env:
+                cache_key = env['HTTP_X_AUTH_TOKEN']
 
             valid, token = _validate_client_token(redis_client,
-                auth_url, project_id, token)
+                auth_url, project_id, cache_key)
 
             if not valid:
-                valid, Usertoken = _validate_client_impersonation(redis_client,
+                valid, usertoken, cache_key = _validate_client_impersonation(redis_client,
                     auth_url, project_id, Admintoken)
-                if valid and Usertoken and Usertoken['token']:
-                    token = Usertoken['token']
-                    env['X-AUTH-TOKEN'] = token
+                if valid and usertoken and usertoken['token']:
+                    token = usertoken['token']
+                    env['HTTP_X_AUTH_TOKEN'] = token
 
             # validate the client and fill out the environment it's valid
             if valid:
                 LOG.debug(('App: Auth Token validated.'))
                 start_response('204 No Content',
-                    [('X-AUTH-TOKEN', token)])
+                    [('HTTP_X_AUTH_TOKEN', cache_key)])
                 return []
 
             else:

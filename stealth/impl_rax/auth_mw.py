@@ -1,6 +1,11 @@
-from stealth.impl_rax.auth_endpoint import AdminToken, \
-    LOG, _validate_client_impersonation, _validate_client_token
+from stealth.impl_rax.auth_token import AdminToken
+from stealth.impl_rax.auth_token_cache import \
+    _validate_client_impersonation, _validate_client_token
 from stealth import conf
+import stealth.util.log as logging
+
+LOG = logging.getLogger(__name__)
+
 
 
 def _http_precondition_failed(start_response):
@@ -48,15 +53,15 @@ def wrap(app, redis_client):
                 auth_url, project_id, cache_key)
 
             if not valid:
-                valid, Usertoken, cache_key = _validate_client_impersonation(redis_client,
-                    auth_url, project_id, Admintoken)
-                if valid and Usertoken and Usertoken['token']:
-                    token = Usertoken['token']
+                valid, usertoken, cache_key = _validate_client_impersonation(
+                    redis_client, auth_url, project_id, Admintoken)
+                if valid and usertoken and usertoken['token']:
+                    token = usertoken['token']
                     env['HTTP_X_AUTH_TOKEN'] = token
 
             # validate the client and fill out the environment it's valid
             if valid:
-                #  Inject cahce_key as the auth token into the response headers.
+                # Inject cahce_key as the auth token into the response headers.
                 def custom_start_response(status, headers, exc_info=None):
                     headers.append(('HTTP_X_AUTH_TOKEN', str(cache_key)))
                     return start_response(status, headers, exc_info)
