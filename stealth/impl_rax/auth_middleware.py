@@ -23,8 +23,6 @@ def _http_unauthorized(start_response):
     return []
 
 
-
-
 def wrap(app, redis_client):
     """Wrap a WSGI app with Authentication middleware.
 
@@ -53,7 +51,8 @@ def wrap(app, redis_client):
             transaction = context.RequestContext()
             setattr(local.store, 'context', transaction)
             stealth.context.transaction = transaction
-            headers.append(('Transaction-ID', str(stealth.context.transaction.request_id)))
+            headers.append(('Transaction-ID', str(
+                stealth.context.transaction.request_id)))
             return start_response(status, headers, exc_info)
 
         try:
