@@ -34,16 +34,18 @@ def wrap(app, redis_client):
     # max_cache_life = conf.'max_cache_life'
 
     def middleware(env, start_response):
+
         try:
             project_id = env['HTTP_X_PROJECT_ID']
             token = ''
+            cache_key = ''
             valid = False
 
             if 'HTTP_X_AUTH_TOKEN' in env:
-                token = env['HTTP_X_AUTH_TOKEN']
+                cache_key = env['HTTP_X_AUTH_TOKEN']
 
             valid, token = _validate_client_token(redis_client,
-                auth_url, project_id, token)
+                auth_url, project_id, cache_key)
 
             if not valid:
                 valid, Usertoken, cache_key = _validate_client_impersonation(redis_client,
@@ -54,8 +56,13 @@ def wrap(app, redis_client):
 
             # validate the client and fill out the environment it's valid
             if valid:
+                #  Inject cahce_key as the auth token into the response headers.
+                def custom_start_response(status, headers, exc_info=None):
+                    headers.append(('HTTP_X_AUTH_TOKEN', str(cache_key)))
+                    return start_response(status, headers, exc_info)
+
                 LOG.debug(('Middleware: Auth Token validated.'))
-                return app(env, start_response)
+                return app(env, custom_start_response)
 
             else:
                 # Validation failed for some reason, just error out as a 401
