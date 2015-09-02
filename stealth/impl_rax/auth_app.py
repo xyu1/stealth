@@ -70,25 +70,27 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
 
             valid, token = _validate_client_token(redis_client,
                 auth_url, project_id, cache_key)
-
-            if not valid:
-                valid, usertoken, cache_key = _validate_client_impersonation(redis_client,
-                    auth_url, project_id, Admintoken)
-                if valid and usertoken and usertoken['token']:
-                    token = usertoken['token']
-                    env['HTTP_X_AUTH_TOKEN'] = token
-
-            # validate the client and fill out the environment it's valid
             if valid:
                 LOG.debug(('App: Auth Token validated.'))
                 start_response('204 No Content',
-                    [('HTTP_X_AUTH_TOKEN', cache_key)])
+                    [])
                 return []
 
-            else:
-                # Validation failed for some reason, just error out as a 401
-                LOG.error(('App: Auth Token validation failed.'))
-                return _http_unauthorized(start_response)
+            # validate the client and fill out the env
+            valid, usertoken, cache_key = _validate_client_impersonation(
+                redis_client, auth_url, project_id, Admintoken)
+            if valid and usertoken and usertoken['token']:
+                token = usertoken['token']
+                # env['X-AUTH-TOKEN'] = token
+                LOG.debug(('App: Auth Token validated.'))
+                start_response('204 No Content',
+                    [('X-AUTH-TOKEN', cache_key)])
+                return []
+
+            # Validation failed. Error out as a 401
+            LOG.error(('App: Auth Token validation failed.'))
+            return _http_unauthorized(start_response)
+
         except (KeyError, LookupError):
             # Header failure, error out with 412
             LOG.error(('App: Missing required headers.'))

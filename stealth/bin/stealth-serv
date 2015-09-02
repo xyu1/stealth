@@ -15,6 +15,6 @@ auth_redis_client = auth_token_cache.get_auth_redis_client()
 # Example uWSGI app calling.
 app = auth_app.app(auth_redis_client)
 validator_app = validator(app)
-server = simple_server.make_server('', 8080, validator_app)
-print('Serving on port 8080 (Ctrl+C to end)...')
+server = simple_server.make_server('', 8999, validator_app)
+print('Serving on port 8999 (Ctrl+C to end)...')
 server.serve_forever()

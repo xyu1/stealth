@@ -76,7 +76,7 @@ Installation
 
     Start up the service by two ways.
 
-        gunicorn -b 127.0.0.1:8999  auth-middleware:app
+        gunicorn -b 127.0.0.1:8999  stealth-middleware:app
         stealth-server
         authserv
 
