@@ -112,8 +112,8 @@ class AdminToken(TokenBase):
 
 class UserToken(TokenBase):
 
-    def __init__(self, url, tenant, Admintoken, token=None):
-        self._Admintoken = Admintoken
+    def __init__(self, url, tenant, admintoken, token=None):
+        self._admintoken = admintoken
         super(UserToken, self).__init__(url=url, tenant=tenant, token=token)
 
     def _update_token(self):
@@ -123,7 +123,7 @@ class UserToken(TokenBase):
             urlpath = '{0}/tenants/{1}/users'.format(
                 self.auth_url, self._tenant)
             headers = {}
-            headers['X-Auth-Token'] = self._Admintoken.token
+            headers['X-Auth-Token'] = self._admintoken.token
             res = requests.get(urlpath, headers=headers)
             if res.status_code != 200:
                 raise exceptions.AuthorizationFailure

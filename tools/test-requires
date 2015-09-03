@@ -10,3 +10,4 @@ sentinels
 mock
 fakeredis>=0.5.1
 httpretty
+requests_mock
