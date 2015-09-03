@@ -160,7 +160,7 @@ def _retrieve_data_from_cache(redis_client, url, tenant, cache_key):
         return None
 
 
-def _validate_client_token(redis_client, url, tenant, cache_key):
+def validate_client_token(redis_client, url, tenant, cache_key):
     """Validate Input Client Token
 
     :param redis_client: redis.Redis object connected to the redis cache
@@ -199,7 +199,7 @@ def _validate_client_token(redis_client, url, tenant, cache_key):
         return False, None
 
 
-def _validate_client_impersonation(redis_client, url, tenant, admintoken):
+def validate_client_impersonation(redis_client, url, tenant, admintoken):
     """Validate Client Token
 
     :param redis_client: redis.Redis object connected to the redis cache

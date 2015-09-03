@@ -1,8 +1,8 @@
 from unittest import TestCase
 from stealth.impl_rax.auth_token import TokenBase, AdminToken
 from stealth.impl_rax.auth_token_cache import get_auth_redis_client, \
-    _send_data_to_cache, _retrieve_data_from_cache, _validate_client_token, \
-    _validate_client_impersonation
+    _send_data_to_cache, _retrieve_data_from_cache, validate_client_token, \
+    validate_client_impersonation
 from stealth import conf
 import mock
 # Mock requests
@@ -85,29 +85,29 @@ class TestAuthTokenCache(TestCase):
 
     def test_validate_client_token(self):
         test_redis = get_auth_redis_client()
-        _validate_client_token(test_redis, url='http://mockurl',
+        validate_client_token(test_redis, url='http://mockurl',
             tenant='tenant-id', cache_key='cache-key')
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata):
-            _validate_client_token(test_redis,
+            validate_client_token(test_redis,
                 url='http://mockurl',
                 tenant='tenant-id',
                 cache_key='cache-key')
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata_expired):
-            _validate_client_token(test_redis,
+            validate_client_token(test_redis,
                 url='http://mockurl',
                 tenant='tenant-id',
                 cache_key='cache-key')
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_exception):
-            _validate_client_token(test_redis, url='http://mockurl',
+            validate_client_token(test_redis, url='http://mockurl',
                 tenant='tenant-id', cache_key='cache-key')
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata):
             with mock.patch.object(dateutil.parser, 'parse',
                     side_effect=side_effect_exception):
-                _validate_client_token(test_redis,
+                validate_client_token(test_redis,
                     url='http://mockurl',
                     tenant='tenant-id',
                     cache_key='cache-key')
@@ -129,8 +129,8 @@ class TestAuthTokenCache(TestCase):
         m.post('http://mockurl/RAX-AUTH/impersonation-tokens', text='\
             {"access": {"token": {"id": "the-token",\
              "expires": "2025-09-04T14:09:20.236Z"}}}')
-        _validate_client_impersonation(test_redis,
+        validate_client_impersonation(test_redis,
             url='http://mockurl', tenant='tenant-id', admintoken=token_data)
         m.post('http://mockurl/RAX-AUTH/impersonation-tokens', status_code=404)
-        _validate_client_impersonation(test_redis,
+        validate_client_impersonation(test_redis,
             url='http://mockurl', tenant='tenant-id', admintoken=token_data)
