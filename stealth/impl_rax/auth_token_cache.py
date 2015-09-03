@@ -210,26 +210,16 @@ def _validate_client_impersonation(redis_client, url, tenant, admintoken):
     :returns: True and the auth token on success, otherwise False and None
     """
 
-    try:
-        user_token = UserToken(url=url, tenant=tenant, admintoken=admintoken)
-        if user_token.token_data is None:
-            LOG.debug(('Unable to get Access information for '
-                '%(s_tenant)s') % {
-                's_tenant': tenant
-            })
-            return False, None, None
-
-        # cache the data so it is easier to access next time
-        retval, cache_key = _send_data_to_cache(redis_client,
-            url=url, token_data=user_token)
-
-        return True, user_token.token_data, cache_key
-
-    except Exception as ex:
-        msg = ('Endpoint: Error while trying to authenticate against'
-            ' %(s_url)s - %(s_except)s') % {
-            's_url': url,
-            's_except': str(ex)
-        }
-        LOG.debug(msg)
+    user_token = UserToken(url=url, tenant=tenant, admintoken=admintoken)
+    if user_token.token_data is None:
+        LOG.debug(('Unable to get Access information for '
+            '%(s_tenant)s') % {
+            's_tenant': tenant
+        })
         return False, None, None
+
+    # cache the data so it is easier to access next time
+    retval, cache_key = _send_data_to_cache(redis_client,
+        url=url, token_data=user_token)
+
+    return True, user_token.token_data, cache_key

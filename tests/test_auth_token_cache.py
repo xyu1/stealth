@@ -1,5 +1,5 @@
 from unittest import TestCase
-from stealth.impl_rax.auth_token import TokenBase, AdminToken, UserToken
+from stealth.impl_rax.auth_token import TokenBase, AdminToken
 from stealth.impl_rax.auth_token_cache import get_auth_redis_client, \
     _send_data_to_cache, _retrieve_data_from_cache, _validate_client_token, \
     _validate_client_impersonation
@@ -115,6 +115,7 @@ class TestAuthTokenCache(TestCase):
     @requests_mock.mock()
     def test_validate_client_impersonation(self, m):
         test_redis = get_auth_redis_client()
+
         m.post('http://mockurl/tokens', text='\
             {"access": {"token": {"id": "the-token", \
             "expires": "2025-09-04T14:09:20.236Z"}}}')
@@ -124,8 +125,12 @@ class TestAuthTokenCache(TestCase):
             {"users": [{"id": "the-user-id"}]}')
         m.get('http://mockurl/users/the-user-id/RAX-AUTH/admins', text='\
             {"users": [{"username": "the-user-name"}]}')
+
         m.post('http://mockurl/RAX-AUTH/impersonation-tokens', text='\
             {"access": {"token": {"id": "the-token",\
              "expires": "2025-09-04T14:09:20.236Z"}}}')
+        _validate_client_impersonation(test_redis,
+            url='http://mockurl', tenant='tenant-id', admintoken=token_data)
+        m.post('http://mockurl/RAX-AUTH/impersonation-tokens', status_code=404)
         _validate_client_impersonation(test_redis,
             url='http://mockurl', tenant='tenant-id', admintoken=token_data)
