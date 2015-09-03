@@ -21,6 +21,7 @@ import dateutil
 import dateutil.parser
 from abc import ABCMeta, abstractmethod, abstractproperty
 import requests
+from keystoneclient import exceptions
 import simplejson as json
 from oslo_utils import timeutils
 
@@ -36,8 +37,18 @@ class TokenBase(object):
         self._token = token
         self._expires = str(timeutils.utcnow())
         self._norm_expires = self.normal_time(self._expires)
-        if tenant and token is None:
-            self._update_token()
+        try:
+            if tenant and token is None:
+                self._update_token()
+        except (exceptions.AuthorizationFailure,
+                exceptions.Unauthorized) as ex:
+            # token update is failed.
+            msg = ('auth token: Failed to update token for \
+                    %(tenant)s: %(s_except)s') % {
+                'tenant': self._tenant,
+                's_except': str(ex)
+            }
+            LOG.debug(msg)
 
     @abstractmethod
     def _update_token(self):
@@ -112,8 +123,8 @@ class AdminToken(TokenBase):
 
 class UserToken(TokenBase):
 
-    def __init__(self, url, tenant, Admintoken, token=None):
-        self._Admintoken = Admintoken
+    def __init__(self, url, tenant, admintoken, token=None):
+        self._admintoken = admintoken
         super(UserToken, self).__init__(url=url, tenant=tenant, token=token)
 
     def _update_token(self):
@@ -123,7 +134,7 @@ class UserToken(TokenBase):
             urlpath = '{0}/tenants/{1}/users'.format(
                 self.auth_url, self._tenant)
             headers = {}
-            headers['X-Auth-Token'] = self._Admintoken.token
+            headers['X-Auth-Token'] = self._admintoken.token
             res = requests.get(urlpath, headers=headers)
             if res.status_code != 200:
                 raise exceptions.AuthorizationFailure
@@ -151,7 +162,7 @@ class UserToken(TokenBase):
         except (exceptions.AuthorizationFailure,
                 exceptions.Unauthorized) as ex:
             # Provided data was invalid and authorization failed
-            msg = ('Endpoint: Failed to authenticate against %(s_url)s'
+            msg = ('auth token: Failed to authenticate against %(s_url)s'
                 ' - %(s_except)s') % {
                 's_url': self.auth_url,
                 's_except': str(ex)
@@ -161,7 +172,7 @@ class UserToken(TokenBase):
             self._expires = None
         except Exception as ex:
             # Provided data was invalid or something else went wrong
-            msg = ('Endpoint: Failed to authenticate against %(s_url)s'
+            msg = ('auth token: Failed to authenticate against %(s_url)s'
                 ' - %(s_except)s') % {
                 's_url': self.auth_url,
                 's_except': str(ex)

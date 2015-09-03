@@ -86,8 +86,9 @@ def _send_data_to_cache(redis_client, url, token_data):
 
     :param redis_client: redis.Redis object connected to the redis cache
     :param url: URL used for authentication
+    :param token_data: json formatted token information to cache.
 
-    :returns: True on success, otherwise False
+    :returns: True and cache_key on success, otherwise False and None
     """
     try:
         # Convert the storable format
@@ -147,7 +148,7 @@ def _retrieve_data_from_cache(redis_client, url, tenant, cache_key):
             msg = ('Endpoint: Stored Data does not contain any credentials - '
                 'Exception: %(s_except)s; Data: $(s_data)s') % {
                 's_except': str(ex),
-                's_data': data
+                's_data': str(cached_data)
             }
             LOG.error(msg)
             return None
@@ -159,7 +160,7 @@ def _retrieve_data_from_cache(redis_client, url, tenant, cache_key):
         return None
 
 
-def _validate_client_token(redis_client, url, tenant, cache_key):
+def validate_client_token(redis_client, url, tenant, cache_key):
     """Validate Input Client Token
 
     :param redis_client: redis.Redis object connected to the redis cache
@@ -198,37 +199,27 @@ def _validate_client_token(redis_client, url, tenant, cache_key):
         return False, None
 
 
-def _validate_client_impersonation(redis_client, url, tenant, Admintoken):
+def validate_client_impersonation(redis_client, url, tenant, admintoken):
     """Validate Client Token
 
     :param redis_client: redis.Redis object connected to the redis cache
     :param url: Keystone Identity URL to authenticate against
-    :param Admintoken: admin token object for Keystone Identity authentication
+    :param admintoken: admin token object for Keystone Identity authentication
     :param tenant: tenant id of user data to retrieve
 
     :returns: True and the auth token on success, otherwise False and None
     """
 
-    try:
-        user_token = UserToken(url=url, tenant=tenant, Admintoken=Admintoken)
-        if user_token.token_data is None:
-            LOG.debug(('Unable to get Access information for '
-                '%(s_tenant)s') % {
-                's_tenant': tenant
-            })
-            return False, None, None
-
-        # cache the data so it is easier to access next time
-        retval, cache_key = _send_data_to_cache(redis_client,
-            url=url, token_data=user_token)
-
-        return True, user_token.token_data, cache_key
-
-    except Exception as ex:
-        msg = ('Endpoint: Error while trying to authenticate against'
-            ' %(s_url)s - %(s_except)s') % {
-            's_url': url,
-            's_except': str(ex)
-        }
-        LOG.debug(msg)
+    user_token = UserToken(url=url, tenant=tenant, admintoken=admintoken)
+    if user_token.token_data is None:
+        LOG.debug(('Unable to get Access information for '
+            '%(s_tenant)s') % {
+            's_tenant': tenant
+        })
         return False, None, None
+
+    # cache the data so it is easier to access next time
+    retval, cache_key = _send_data_to_cache(redis_client,
+        url=url, token_data=user_token)
+
+    return True, user_token.token_data, cache_key
