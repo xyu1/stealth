@@ -5,25 +5,6 @@ import requests
 import requests_mock
 
 
-def side_effect_exception(*args):
-    raise Exception('mock exception')
-
-
-def side_effect_redis_getdata(*args):
-    return '{"token": "the-token", "tenant": "tenant-id", \
-        "expires": "2025-09-04T14:09:20.236Z"}'
-
-
-def side_effect_redis_getdata_wrong(*args):
-    return '{"token": "the-token"}, "tenant": "tenant-id", \
-        "expires": "2025-09-04T14:09:20.236Z"}'
-
-
-def side_effect_redis_getdata_expired(*args):
-    return '{"token": "the-token", "tenant": "tenant-id", \
-        "expires": "1025-09-04T14:09:20.236Z"}'
-
-
 class TestAuthToken(TestCase):
 
     @requests_mock.mock()
