@@ -6,7 +6,6 @@ import stealth.util.log as logging
 from tests import V1Base
 
 
-
 class TestDriver(V1Base):
 
     def test_driver(self):

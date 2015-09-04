@@ -14,8 +14,7 @@
 # limitations under the License.
 
 from stealth.impl_rax.auth_token import AdminToken
-from stealth.impl_rax.auth_token_cache import \
-    validate_client_impersonation, validate_client_token
+from stealth.impl_rax import auth_token_cache
 
 
 import functools
@@ -74,13 +73,15 @@ class AuthServ(object):
             if 'X-AUTH-TOKEN' in req.headers:
                 cache_key = req.headers['X-AUTH-TOKEN']
 
-            valid, auth_token = validate_client_token(self.redis_client,
+            valid, auth_token = auth_token_cache.validate_client_token(
+                self.redis_client,
                 self.auth_url, project_id, cache_key)
 
             if not valid:
-                valid, usertoken, cache_key = validate_client_impersonation(
-                    self.redis_client, self.auth_url, project_id,
-                    self.Admintoken)
+                valid, usertoken, cache_key =\
+                    auth_token_cache.validate_client_impersonation(
+                        self.redis_client, self.auth_url, project_id,
+                        self.Admintoken)
 
                 if not valid:
                     # Validation failed for some reason,
