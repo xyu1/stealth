@@ -1,6 +1,4 @@
-from unittest import TestCase
-from stealth.transport.wsgi.driver import Driver
-import stealth.cmd.server
+from tests import V1Base
 from mock import patch
 
 
@@ -19,7 +17,7 @@ class FakeDriver(object):
         raise KeyboardInterrupt
 
 
-class TestCmd(TestCase):
+class TestCmd(V1Base):
 
     def setUp(self):
         super(TestCmd, self).setUp()
@@ -29,16 +27,19 @@ class TestCmd(TestCase):
 
     @patch('stealth.transport.wsgi.driver.Driver.listen', FakeDriver.listen)
     def test_server1(self):
+        import stealth.cmd.server
         stealth.cmd.server.run()
 
     @patch('stealth.transport.wsgi.driver.Driver.listen',
           FakeDriver.listenInterrupt)
     def test_server2(self):
+        import stealth.cmd.server
         stealth.cmd.server.run()
 
     @patch('stealth.transport.wsgi.driver.Driver.listen',
           FakeDriver.listenExcept)
     def test_server3(self):
+        import stealth.cmd.server
         with self.assertRaises(SystemExit):
             with self.assertRaises(Exception):
                 stealth.cmd.server.run()
