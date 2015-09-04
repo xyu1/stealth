@@ -4,8 +4,6 @@ import falcon
 
 from tests import V1Base
 from mock import patch
-from stealth.transport.wsgi import errors
-import stealth.impl_rax.auth_endpoint as auth
 
 
 class TestRaxAuth(V1Base):

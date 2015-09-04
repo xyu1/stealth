@@ -2,9 +2,11 @@ import uuid
 import random
 import unittest
 from falcon import testing as ftest
-from stealth.transport.wsgi import Driver, v1_0
 import stealth.util.log as logging
 import falcon
+import requests_mock
+import stealth
+from stealth import conf
 
 
 class DummyContextObject(object):
@@ -15,15 +17,28 @@ class TestBase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestBase, self).__init__(*args, **kwargs)
 
-    def setUp(self):
+    @requests_mock.mock()
+    def setUp(self, m):
         super(TestBase, self).setUp()
-        import stealth
+        m.post('http://mockurl/tokens', text='\
+            {"access": {"token": {"id": "the-token", \
+            "expires": "2025-09-04T14:09:20.236Z"}}}')
+        m.get('http://mockurl/tenants/tenant-id/users', text='\
+            {"users": [{"id": "the-user-id"}]}')
+        m.get('http://mockurl/users/the-user-id/RAX-AUTH/admins', text='\
+            {"users": [{"username": "the-user-name"}]}')
+        m.post('http://mockurl/RAX-AUTH/impersonation-tokens', text='\
+            {"access": {"token": {"id": "the-token",\
+             "expires": "2025-09-04T14:09:20.236Z"}}}')
+        conf.auth.auth_url = 'http://mockurl'
         stealth.context = DummyContextObject()
         stealth.context.project_id = self.create_project_id()
         stealth.context.openstack = DummyContextObject()
         stealth.context.openstack.auth_token = self.create_auth_token()
         stealth.context.openstack.swift = DummyContextObject()
         stealth.context.openstack.swift.storage_url = 'storage.url'
+
+        from stealth.transport.wsgi import Driver, v1_0
         self._driver = Driver()
         self.app = self._driver.app
 

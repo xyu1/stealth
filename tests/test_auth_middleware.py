@@ -1,6 +1,5 @@
-from unittest import TestCase
-from stealth.impl_rax import auth_middleware
-from stealth.impl_rax import auth_token_cache
+from tests import V1Base
+import requests_mock
 
 
 def start_response(status, headers):
@@ -16,15 +15,21 @@ def side_effect_exception(*args):
     raise Exception('mock exception')
 
 
-class TestAuthMiddleware(TestCase):
+class TestAuthMiddleware(V1Base):
 
     def setUp(self):
         super(TestAuthMiddleware, self).setUp()
+
+    @requests_mock.mock()
+    def test_middleware(self, m):
+        from stealth.impl_rax import auth_middleware
+        from stealth.impl_rax import auth_token_cache
+        env = dict()
+        m.post('http://mockurl/tokens', text='{"access": \
+            {"token": {"id": "the-token", "expires": \
+            "2025-09-04T14:09:20.236Z"}}}')
         self.auth_redis_client = auth_token_cache.get_auth_redis_client()
         self.app = auth_middleware.wrap(example_app, self.auth_redis_client)
-
-    def test_middleware(self):
-        env = dict()
         self.app(env, start_response)
 
         # response = self.simulate_get('/', headers={})
