@@ -11,6 +11,7 @@ import dateutil.parser
 # Mock redis
 import fakeredis
 import redis
+import simplejson as json
 
 
 redis = fakeredis
@@ -42,32 +43,51 @@ class TestAuthTokenCache(TestCase):
 
     def test_validate_client_token(self):
         test_redis = get_auth_redis_client()
-        validate_client_token(test_redis, url='http://mockurl',
+        self.assertIsNotNone(test_redis)
+        retval, token = validate_client_token(
+            test_redis, url='http://mockurl',
             tenant='tenant-id', cache_key='cache-key')
+        self.assertFalse(retval)
+        self.assertIsNone(token)
+
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata):
-            validate_client_token(test_redis,
+            retval, token = validate_client_token(
+                test_redis,
                 url='http://mockurl',
                 tenant='tenant-id',
                 cache_key='cache-key')
+            self.assertTrue(retval)
+            self.assertEqual(token, 'the-token')
+
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata_expired):
-            validate_client_token(test_redis,
+            retval, token = validate_client_token(
+                test_redis,
                 url='http://mockurl',
                 tenant='tenant-id',
                 cache_key='cache-key')
+            self.assertFalse(retval)
+            self.assertIsNone(token)
+
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_exception):
-            validate_client_token(test_redis, url='http://mockurl',
+            retval, token = validate_client_token(
+                test_redis, url='http://mockurl',
                 tenant='tenant-id', cache_key='cache-key')
+            self.assertFalse(retval)
+            self.assertIsNone(token)
+
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata):
             with mock.patch.object(dateutil.parser, 'parse',
                     side_effect=side_effect_exception):
-                validate_client_token(test_redis,
+                retval, token = validate_client_token(test_redis,
                     url='http://mockurl',
                     tenant='tenant-id',
                     cache_key='cache-key')
+            self.assertFalse(retval)
+            self.assertIsNone(token)
 
     @requests_mock.mock()
     def test_validate_client_impersonation(self, m):
@@ -78,16 +98,26 @@ class TestAuthTokenCache(TestCase):
             "expires": "2025-09-04T14:09:20.236Z"}}}')
         token_data = AdminToken(url='http://mockurl', tenant='tenant-id',
             passwd='passwd', token='thetoken')
+        self.assertIsNone(token_data.token_data)
+
         m.get('http://mockurl/tenants/tenant-id/users', text='\
             {"users": [{"id": "the-user-id"}]}')
         m.get('http://mockurl/users/the-user-id/RAX-AUTH/admins', text='\
             {"users": [{"username": "the-user-name"}]}')
-
         m.post('http://mockurl/RAX-AUTH/impersonation-tokens', text='\
             {"access": {"token": {"id": "the-token",\
              "expires": "2025-09-04T14:09:20.236Z"}}}')
-        validate_client_impersonation(test_redis,
+        retval, token, cache_key = validate_client_impersonation(test_redis,
             url='http://mockurl', tenant='tenant-id', admintoken=token_data)
+        self.assertTrue(retval)
+        self.assertIsNotNone(cache_key)
+        self.assertEqual(token["expires"], "2025-09-04T14:09:20.236Z")
+        self.assertEqual(token["tenant"], "tenant-id")
+        self.assertEqual(token["token"], "the-token")
+
         m.post('http://mockurl/RAX-AUTH/impersonation-tokens', status_code=404)
-        validate_client_impersonation(test_redis,
+        retval, token, cache_key = validate_client_impersonation(test_redis,
             url='http://mockurl', tenant='tenant-id', admintoken=token_data)
+        self.assertFalse(retval)
+        self.assertIsNone(token)
+        self.assertIsNone(cache_key)

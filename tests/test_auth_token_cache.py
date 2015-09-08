@@ -8,7 +8,6 @@ import mock
 # Mock requests
 import requests
 import requests_mock
-import dateutil.parser
 # Mock redis
 import fakeredis
 import redis
@@ -23,12 +22,12 @@ def side_effect_exception(*args):
 
 def side_effect_redis_getdata(*args):
     return '{"token": "the-token", "tenant": "tenant-id", \
-        "expires": "2025-09-04T14:09:20.236Z"}'
+        "expires": "2125-09-04T14:09:20.236Z"}'
 
 
 def side_effect_redis_getdata_wrong(*args):
     return '{"token": "the-token"}, "tenant": "tenant-id", \
-        "expires": "2025-09-04T14:09:20.236Z"}'
+        "expires": "2125-09-04T14:09:20.236Z"}'
 
 
 def side_effect_redis_getdata_expired(*args):
@@ -43,8 +42,10 @@ class TestAuthTokenCache(TestCase):
         origval = conf.auth_redis.ssl_enable
         conf.auth_redis.ssl_enable = 'None'
         test_redis = get_auth_redis_client()
+        self.assertIsNotNone(test_redis)
         conf.auth_redis.ssl_enable = 'True'
         test_redis = get_auth_redis_client()
+        self.assertIsNotNone(test_redis)
         conf.auth_redis.ssl_enable = origval
 
     @requests_mock.mock()
@@ -52,22 +53,31 @@ class TestAuthTokenCache(TestCase):
         test_redis = get_auth_redis_client()
         m.post('http://mockurl/tokens', text='{"access": \
             {"token": {"id": "the-token", "expires": \
-            "2025-09-04T14:09:20.236Z"}}}')
+            "2125-09-04T14:09:20.236Z"}}}')
         token_data = AdminToken(url='http://mockurl', tenant='\
             tenant-id', passwd='passwd', token='thetoken')
+        self.assertIsNotNone(token_data)
+        self.assertIsNone(token_data.token_data)
         # _send_data_to_cache()
-        _send_data_to_cache(test_redis, '', token_data)
+        retval, key = _send_data_to_cache(test_redis, '', token_data)
+        self.assertTrue(retval)
+        self.assertIsNotNone(key)
+        self.assertIsInstance(key, str)
 
         with mock.patch.object(test_redis, 'set',
                 side_effect=side_effect_exception):
-            _send_data_to_cache(test_redis, '', token_data)
+            retval, key = _send_data_to_cache(test_redis, '', token_data)
+            self.assertFalse(retval)
+            self.assertIsNone(key)
 
     def test_retrieve_data_from_cache(self):
         test_redis = get_auth_redis_client()
         self.assertIsNone(_retrieve_data_from_cache(test_redis,
             url='http://mockurl', tenant='tenant-id', cache_key=None))
-        _retrieve_data_from_cache(test_redis, url='http://mockurl',
+        retval = _retrieve_data_from_cache(test_redis, url='http://mockurl',
             tenant='tenant-id', cache_key='cache-key')
+        self.assertIsNone(retval)
+
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_exception):
             self.assertIsNone(_retrieve_data_from_cache(test_redis,
@@ -75,8 +85,13 @@ class TestAuthTokenCache(TestCase):
                 cache_key='cache-key'))
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata):
-            _retrieve_data_from_cache(test_redis, url='http://mockurl',
+            retval = _retrieve_data_from_cache(test_redis,
+                url='http://mockurl',
                 tenant='tenant-id', cache_key='cache-key')
+            self.assertIsNotNone(retval)
+            self.assertEqual(retval['tenant'], 'tenant-id')
+            self.assertEqual(retval['token'], 'the-token')
+            self.assertEqual(retval['expires'], '2125-09-04T14:09:20.236Z')
         with mock.patch.object(test_redis, 'get',
                 side_effect=side_effect_redis_getdata_wrong):
             self.assertIsNone(_retrieve_data_from_cache(test_redis,

@@ -96,7 +96,8 @@ def validate_client_impersonation(redis_client, url, tenant, admintoken):
     :param admintoken: admin token object for Keystone Identity authentication
     :param tenant: tenant id of user data to retrieve
 
-    :returns: True and the auth token on success, otherwise False and None
+    :returns: True, the auth token, and the cachekey on success,
+    :         otherwise False, None, and None
     """
 
     user_token = UserToken(url=url, tenant=tenant, admintoken=admintoken)
