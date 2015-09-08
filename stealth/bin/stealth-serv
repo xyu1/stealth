@@ -2,6 +2,7 @@
 from stealth.impl_rax import auth_app
 from stealth.impl_rax import auth_token
 from stealth.impl_rax import auth_token_cache
+from stealth.impl_rax import token_validation
 
 from wsgiref import simple_server
 from wsgiref.validate import validator
@@ -9,7 +10,7 @@ from stealth import conf
 
 
 # Get the separated Redis Server for Auth
-auth_redis_client = auth_token_cache.get_auth_redis_client()
+auth_redis_client = token_validation.get_auth_redis_client()
 
 
 # Example uWSGI app calling.

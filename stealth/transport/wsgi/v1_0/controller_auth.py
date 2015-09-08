@@ -2,7 +2,7 @@ import logging
 import falcon
 # Load Rackspace version of auth endpoint.
 import stealth.impl_rax.auth_endpoint as auth
-import stealth.impl_rax.auth_token_cache as token_cache
+from stealth.impl_rax import token_validation
 import stealth.util.log as logging
 from stealth.transport.wsgi import errors
 from stealth import conf
@@ -10,7 +10,7 @@ LOG = logging.getLogger(__name__)
 
 
 # Get the separated Redis Server for Auth
-auth_redis_client = token_cache.get_auth_redis_client()
+auth_redis_client = token_validation.get_auth_redis_client()
 
 authserv = auth.AuthServ(auth_redis_client)
 

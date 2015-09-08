@@ -21,7 +21,7 @@
 
 import falcon
 from stealth.impl_rax.auth_token import AdminToken
-from stealth.impl_rax import auth_token_cache
+from stealth.impl_rax import token_validation
 from stealth import conf
 
 import stealth.util.log as logging
@@ -67,7 +67,7 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
             if 'HTTP_X_AUTH_TOKEN' in env:
                 cache_key = env['HTTP_X_AUTH_TOKEN']
 
-            valid, token = auth_token_cache.validate_client_token(redis_client,
+            valid, token = token_validation.validate_client_token(redis_client,
                 auth_url, project_id, cache_key)
             if valid:
                 LOG.debug(('App: Auth Token validated.'))
@@ -77,7 +77,7 @@ def app(redis_client, auth_url=None, admin_name=None, admin_pass=None):
 
             # validate the client and fill out the env
             valid, usertoken, cache_key = \
-                auth_token_cache.validate_client_impersonation(
+                token_validation.validate_client_impersonation(
                     redis_client, auth_url, project_id, Admintoken)
             if valid and usertoken and usertoken['token']:
                 token = usertoken['token']

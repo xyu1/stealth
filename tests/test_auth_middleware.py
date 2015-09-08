@@ -82,14 +82,14 @@ class TestAuthMiddleware(TestCase):
     @requests_mock.mock()
     def test_middleware(self, m):
         from stealth.impl_rax import auth_middleware
-        import stealth.impl_rax.auth_token_cache
+        import stealth.impl_rax.token_validation
         env = dict()
         m.post('http://mockurl/tokens', text='{"access": \
             {"token": {"id": "the-token", "expires": \
             "2025-09-04T14:09:20.236Z"}}}')
         conf.auth.auth_url = 'http://mockurl'
         self.auth_redis_client = \
-            stealth.impl_rax.auth_token_cache.get_auth_redis_client()
+            stealth.impl_rax.token_validation.get_auth_redis_client()
         self.app = auth_middleware.wrap(example_app, self.auth_redis_client)
         self.app(env, start_response)
 
@@ -99,14 +99,14 @@ class TestAuthMiddleware(TestCase):
         response = self.simulate_get('/', headers={'X-PROJECT-ID': 'proj12345',
             'X-AUTH-TOKEN': 'token12345'})
 
-        with mock.patch.object(stealth.impl_rax.auth_token_cache,
+        with mock.patch.object(stealth.impl_rax.token_validation,
                 'validate_client_token',
                 side_effect=side_effect_validate_client_token):
             response = self.simulate_get('/', headers={
                 'X-PROJECT-ID': 'proj12345',
                 'X-AUTH-TOKEN': 'token12345'})
 
-        with mock.patch.object(stealth.impl_rax.auth_token_cache,
+        with mock.patch.object(stealth.impl_rax.token_validation,
                 'validate_client_impersonation',
                 side_effect=side_effect_validate_client_impersonation):
             response = self.simulate_get('/', headers={

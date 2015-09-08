@@ -2,6 +2,7 @@
 import falcon
 from stealth.impl_rax import auth_token
 from stealth.impl_rax import auth_token_cache
+from stealth.impl_rax import token_validation
 from stealth.impl_rax import auth_middleware
 
 
@@ -11,6 +12,6 @@ def example_app(env, start_response):
     return []
 
 
-auth_redis_client = auth_token_cache.get_auth_redis_client()
+auth_redis_client = token_validation.get_auth_redis_client()
 
 app = auth_middleware.wrap(example_app, auth_redis_client)
