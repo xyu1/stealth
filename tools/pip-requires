@@ -12,3 +12,4 @@ simplejson
 d2to1
 hiredis
 msgpack-python
+validators

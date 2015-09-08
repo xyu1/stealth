@@ -21,24 +21,28 @@ class TestAuthToken(TestCase):
 
     @requests_mock.mock()
     def test_user_token(self, m):
-        m.post('http://mockurl/tokens', text='\
-            {"access": {"token": {"id": "the-token", \
-            "expires": "2025-09-04T14:09:20.236Z"}}}')
-        admintoken = AdminToken(url='http://mockurl', tenant='tenant-id',
+        m.post('http://mockurl.com/tokens', status_code=404)
+        admintoken = AdminToken(url='http://mockurl.com', tenant='tenant-id',
             passwd='passwd')
 
-        m.get('http://mockurl/tenants/tenant-id/users', status_code=404)
-        usertoken = UserToken(url='http://mockurl', tenant='tenant-id',
+        m.post('http://mockurl.com/tokens', text='\
+            {"access": {"token": {"id": "the-token", \
+            "expires": "2025-09-04T14:09:20.236Z"}}}')
+        admintoken = AdminToken(url='http://mockurl.com', tenant='tenant-id',
+            passwd='passwd')
+
+        m.get('http://mockurl.com/tenants/tenant-id/users', status_code=404)
+        usertoken = UserToken(url='http://mockurl.com', tenant='tenant-id',
             admintoken=admintoken)
 
-        m.get('http://mockurl/tenants/tenant-id/users', text='\
+        m.get('http://mockurl.com/tenants/tenant-id/users', text='\
             {"users": [{"id": "the-user-id"}]}')
-        usertoken = UserToken(url='http://mockurl',
+        usertoken = UserToken(url='http://mockurl.com',
             tenant='tenant-id',
             admintoken=admintoken)
 
-        m.get('http://mockurl/users/the-user-id/RAX-AUTH/admins',
+        m.get('http://mockurl.com/users/the-user-id/RAX-AUTH/admins',
             status_code=404)
-        usertoken = UserToken(url='http://mockurl',
+        usertoken = UserToken(url='http://mockurl.com',
             tenant='tenant-id',
             admintoken=admintoken, token=None)

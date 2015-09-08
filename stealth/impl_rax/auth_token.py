@@ -24,6 +24,7 @@ import requests
 from keystoneclient import exceptions
 import simplejson as json
 from oslo_utils import timeutils
+import validators
 
 STALE_TOKEN_DURATION = 30
 LOG = logging.getLogger(__name__)
@@ -75,9 +76,12 @@ class TokenBase(object):
     def token(self):
         if self._token is None:
             return None
-        if self.will_expire_soon(self._norm_expires):
-            self._update_token()
-        return self._token
+        try:
+            if self.will_expire_soon(self._norm_expires):
+                self._update_token()
+            return self._token
+        except exceptions.AuthorizationFailure:
+            return None
 
     @property
     def expires(self):
@@ -95,10 +99,13 @@ class TokenBase(object):
     def token_data(self):
         if self._token is None:
             return None
-        if self.will_expire_soon(self._norm_expires):
-            self._update_token()
-        return {'token': self._token, 'tenant': self._tenant,
-            'expires': self._expires}
+        try:
+            if self.will_expire_soon(self._norm_expires):
+                self._update_token()
+            return {'token': self._token, 'tenant': self._tenant,
+                'expires': self._expires}
+        except exceptions.AuthorizationFailure:
+            return None
 
 
 class AdminToken(TokenBase):
@@ -108,6 +115,8 @@ class AdminToken(TokenBase):
         super(AdminToken, self).__init__(url=url, tenant=tenant, token=token)
 
     def _update_token(self):
+        if not validators.url(self.auth_url):
+            raise exceptions.AuthorizationFailure
         urlpath = '{0}/tokens'.format(self.auth_url)
         headers = {}
         headers['Content-type'] = 'application/json'
