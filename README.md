@@ -1,16 +1,17 @@
-STEALTH Validation Middleware []
-=====
+STEALTH Validation Middleware
+=============================
 
-Impersonation Token Assignment and Validation Service towards Openstack Identity Server
+A Python middleware for Impersonation Token Assignment and Validation Service towards Openstack Identity Server.
 
 
-What is STEALTH Validation Service?
---------------
-To be created.
+Overview
+--------
+Openstack Keystone, e.g., Rackspace Identity, Services require "super power" administrators' credentials periodically to generate and renew the impersonation tokens for the ordinary end users.  An Openstack system usually needs an isolation mechanism to protect the admin tokens from the end users, meanwhile an encryption mechanism to protect the impersonation tokens.  
 
-API
----
-To be created.
+This middleware conceals the admin token and requires only the "project id"/"tenant id" from the customers.  It uses token cache to manage the impersonation tokens to avoid the unnecessary traffic towards the Keystone servers.  It automatically renews the impersonation tokens when they expire.  
+
+It can optionally conceals keystone's impersonation tokens from the end users by generating HMAC tokens for the following users' requests.  
+
 
 Features
 --------
@@ -54,7 +55,7 @@ Features
 Installation
 ------------
 
-    Install the code.
+    Install and test the code.
 
         # Install dependencies.
         sudo apt-get install redis
@@ -69,27 +70,21 @@ Installation
         virtualenv -p /usr/bin/python3.4 stealth
         cd stealth
         . bin/activate
-        pip install --upgrade netifaces oslo.config oslo.utils
-        pip3 uninstall gunicorn
-        pip3 install gunicorn
-
 
         # Retrieve the latest.
         git clone https://github.com/xyu1/stealth.git
         cd stealth
 
+        # Optional upgrades.
+        pip install --upgrade netifaces oslo.config oslo.utils
+        pip3 uninstall gunicorn
+        pip3 install gunicorn
         pip install --upgrade setuptools
 
-        # Build.
-        python setup.py build
-        python setup.py install
 
-    Copy over config files and edit.
+    Copy over config files and *edit*.
 
-        mkdir ~/.stealth
-        cp ini/config.ini ~/.stealth/config.ini
-
-
-
+        sudo mkdir /etc/stealth
+        sudo cp ini/config.ini /etc/stealth/config.ini
 
 
