@@ -1,16 +1,16 @@
 STEALTH Validation Middleware
 =============================
 
-A Python middleware for Impersonation Token Assignment and Validation Service towards Openstack Identity Server.
+A Python middleware for Impersonation Token Assignment and Validation Service towards Openstack Keystone Server.
 
 
 Overview
 --------
-Openstack Keystone, e.g., Rackspace Identity, Services require "super power" administrators' credentials periodically to generate and renew the impersonation tokens for the ordinary end users.  An Openstack system usually needs an isolation mechanism to protect the admin tokens from the end users, meanwhile an encryption mechanism to protect the impersonation tokens.  
+Openstack Keystone, e.g., Rackspace Identity, Services require "super power" administrators' credentials periodically to generate and renew the impersonation tokens for the ordinary end users.  An Openstack system usually needs an isolation mechanism to protect the Admin Tokens from the end users, meanwhile an encryption mechanism to protect the Impersonation Tokens among the end users.  
 
-This middleware conceals the admin token and requires only the "project id"/"tenant id" from the customers.  It uses token cache to manage the impersonation tokens to avoid the unnecessary traffic towards the Keystone servers.  It automatically renews the impersonation tokens when they expire.  
+This middleware conceals the Admin Token, and requires only the "project id"/"tenant id" from the customers' requests.  It uses a token cache to manage the Impersonation Tokens to avoid the unnecessary traffic towards the Keystone servers.  It automatically renews the Impersonation Tokens when they expire.  
 
-It can optionally conceals keystone's impersonation tokens from the end users by generating HMAC tokens for the following users' requests.  
+It can optionally conceal Keystone's Impersonation Tokens from the end users by generating and returning HMAC tokens for the users' future requests.  
 
 
 Features
