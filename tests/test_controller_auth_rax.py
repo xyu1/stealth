@@ -29,12 +29,17 @@ class TestRaxAuth(V1Base):
         hdrs['X-PROJECT-ID'] = self._projid
         response = self.simulate_get('/auth',
             headers=hdrs)
+        self.assertEqual(response, [])
 
     @patch('stealth.impl_rax.auth_endpoint.AuthServ.auth', FakeRaxAuth.Failure)
     def test_rax_auth_failure(self):
         hdrs = self._hdrs.copy()
         response = self.simulate_get('/auth',
             headers=hdrs)
+        self.assertEqual(json.loads(response[0].decode('ascii'))
+            ['description'], "Missing required headers.")
         hdrs['X-PROJECT-ID'] = self._projid
         response = self.simulate_get('/auth',
             headers=hdrs)
+        self.assertEqual(json.loads(response[0].decode('ascii'))
+            ['description'], "mocking error")

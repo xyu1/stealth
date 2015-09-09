@@ -1,6 +1,6 @@
 import stealth
 from stealth.impl_rax.auth_token import AdminToken
-from stealth.impl_rax import auth_token_cache
+from stealth.impl_rax import token_validation
 from stealth import conf
 from stealth.common import context
 from stealth.common import local
@@ -64,7 +64,7 @@ def wrap(app, redis_client):
                 cache_key = env['HTTP_X_AUTH_TOKEN']
 
             # Validate the input cache_key.
-            valid, token = auth_token_cache.validate_client_token(redis_client,
+            valid, token = token_validation.validate_client_token(redis_client,
                 auth_url, project_id, cache_key)
             if valid:
                 env['X-AUTH-TOKEN'] = token
@@ -73,7 +73,7 @@ def wrap(app, redis_client):
 
             # Validate the client with the impersonation token
             valid, usertoken, cache_key = \
-                auth_token_cache.validate_client_impersonation(
+                token_validation.validate_client_impersonation(
                     redis_client, auth_url, project_id, Admintoken)
             if valid and usertoken and usertoken['token']:
 
