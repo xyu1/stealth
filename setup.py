@@ -27,17 +27,17 @@ except ImportError:
 else:
     REQUIRES = ['configobj', 'falcon', 'six', 'setuptools >= 1.1.6',
                 'python-dateutil', 'python-keystoneclient', 'oslo.utils',
-                'oslo.config',
-                'redis', 'simplejson', 'd2to1', 'hiredis', 'msgpack-python',
-                'stoplight']
+                'oslo.config', 'redis',
+                'simplejson', 'd2to1', 'hiredis', 'msgpack-python']
     setup(
         name='stealth',
-        version='0.1',
-        description='',
+        version='0.9',
+        description='Openstack Keystone Impersonation Token Assignment and Validation Middleware',
         license='Apache License 2.0',
-        url='',
+        url='https://github.com/xyu1/stealth',
+        download_url = 'https://github.com/xyu1/stealth/tarball/0.9',
         author='Rackspace',
-        author_email='',
+        author_email='xuanyu1@yahoo.com',
         include_package_data=True,
         install_requires=REQUIRES,
         test_suite='stealth',
